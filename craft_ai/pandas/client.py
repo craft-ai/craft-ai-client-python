@@ -169,6 +169,10 @@ class Client(VanillaClient):
     @staticmethod
     def decide_from_contexts_df(tree, contexts_df):
         if isinstance(contexts_df, pd.DataFrame):
+            if contexts_df.empty:
+                raise CraftAiBadRequestError(
+                    "Invalid dataframe given, dataframe is empty."
+                )
             if not isinstance(contexts_df.index, pd.DatetimeIndex):
                 raise CraftAiBadRequestError(
                     "Invalid dataframe given, it is not time indexed."
