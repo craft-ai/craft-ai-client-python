@@ -27,6 +27,8 @@ jobs:
       - name: Run lint
         run: poetry run task lint
       - name: Run tests
+        env: 
+          CRAFT_TOKEN: ${{ secrets.STANLEY_CRAFT_AI_BETA_TOKEN }}
         run: poetry run pytest --durations=10 tests/*.py
       - name: Build library
         run: poetry build
