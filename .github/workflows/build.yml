@@ -8,13 +8,28 @@ jobs:
         python-version: [3.6, 3.8]
         poetry-version: [1.1.4]
         use_pandas: [true, false]
+        exclude:
+          - python-version: 3.6
+            use_pandas: true
+        include:
+          # Define a build_id for each matrix config
+          - python-version: 3.8
+            use_pandas: false
+            build_id: ${{ github.run_number }}0
+          - python-version: 3.8
+            use_pandas: true
+            build_id: ${{ github.run_number }}1
+          - python-version: 3.6
+            use_pandas: false
+            build_id: ${{ github.run_number }}2
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Inspect local variable
         run: |
-          echo ${{ job.container.id  }}
+          echo ${{ matrix.build_id }}
+          echo ${{ job.container.id }}
           echo ${{ github.run_id  }}
           echo ${{ github.run_number  }}  	
       - name: Set up Python ${{ matrix.python-version }}
@@ -36,7 +51,7 @@ jobs:
       - name: Run tests
         env: 
           CRAFT_TOKEN: ${{ secrets.STANLEY_CRAFT_AI_BETA_TOKEN }}
-          JOB_ID: ${{ github.run_id }}
+          JOB_ID: ${{ matrix.build_id }}
         run: poetry run pytest --durations=10 tests/*.py
       - name: Build library
         run: poetry build
