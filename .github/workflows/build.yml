@@ -1,4 +1,4 @@
-name: learn-github-actions
+name: test python client
 on: [push]
 jobs:
   run_tests:
@@ -25,13 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: true
-      - name: Inspect local variable
-        run: |
-          echo ${{ matrix.build_id }}
-          echo ${{ job.container.id }}
-          echo ${{ github.run_id  }}
-          echo ${{ github.run_number  }}  	
+          submodules: true	
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
