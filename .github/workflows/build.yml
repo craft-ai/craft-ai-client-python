@@ -23,9 +23,11 @@ jobs:
             use_pandas: false
             build_id: ${{ github.run_number }}2
     steps:
-      - uses: actions/checkout@v2
+      # Preparing test/build environment 
+      - name: Checkout scm
+        uses: actions/checkout@v2
         with:
-          submodules: true	
+          submodules: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -34,12 +36,14 @@ jobs:
         uses: abatilo/actions-poetry@v2.1.0
         with:
           poetry-version: ${{ matrix.poetry-version }}
+      # Installing dependencies
       - name: Install dependencies without pandas
         if: ${{ matrix.use_pandas == false }}
         run: poetry install
       - name: Install dependencies with Pandas
         if: ${{ matrix.use_pandas == true }}
         run: poetry install -E pandas
+      # run tests
       - name: Run lint
         run: poetry run task lint
       - name: Run tests
@@ -47,6 +51,7 @@ jobs:
           CRAFT_TOKEN: ${{ secrets.STANLEY_CRAFT_AI_BETA_TOKEN }}
           JOB_ID: ${{ matrix.build_id }}
         run: poetry run pytest --durations=10 tests/*.py
-      - name: Build library
-        run: poetry build
-
+      # if tagged, build and publish
+      - name: Build and publish package
+        #if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        run: poetry publish --build --password ${{ secrets.PYPI_CRAFT_AI_TOKEN }} --username ${{ secrets.PYPI_CRAFT_AI_USER }} --dry-run
