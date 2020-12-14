@@ -15,6 +15,9 @@ jobs:
           - python-version: 3.8
             use_pandas: false
             build_id: ${{ github.run_number }}0
+          # add the to_publish variable to identify the 
+          # matrix configuration to produce 
+          # build artefacts
           - python-version: 3.8
             use_pandas: true
             build_id: ${{ github.run_number }}1
@@ -63,8 +66,7 @@ jobs:
             
   publish:
     # if tagged, build and publish
-    #if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    #if: github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     runs-on: ubuntu-latest
     needs: run_tests
     steps:
@@ -82,9 +84,5 @@ jobs:
         uses: abatilo/actions-poetry@v2.1.0
         with:
           poetry-version: 1.1.4
-      - name: Check artefacts
-        run: |
-          ls
-          ls dist
       - name: Build and publish package
-        run: poetry publish --password ${{ secrets.PYPI_CRAFT_AI_TOKEN }} --username ${{ secrets.PYPI_CRAFT_AI_USER }} --dry-run
+        run: poetry publish --password ${{ secrets.PYPI_CRAFT_AI_TOKEN }} --username ${{ secrets.PYPI_CRAFT_AI_USER }}
