@@ -12,6 +12,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Inspect local variable
+        run: |
+          echo ${{ job.container.id  }}
+          echo ${{ github.run_id  }}
+          echo ${{ github.run_number  }}  	
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
