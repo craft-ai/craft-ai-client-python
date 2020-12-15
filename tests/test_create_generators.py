@@ -24,12 +24,18 @@ class TestCreateGeneratorSuccess(unittest.TestCase):
         self.client.create_agent(valid_data.VALID_CONFIGURATION, self.agent_id)
 
     def tearDown(self):
-        self.client.delete_generator(self.generator_id)
-        self.client.delete_agent(self.agent_id)
+        try:
+            self.client.delete_generator(self.generator_id)
+            self.client.delete_agent(self.agent_id)
+        except craft_err.CraftAiError:
+            return
 
     def clean_up_generator(self, generator_id):
         # Makes sure that no generator with the standard ID remains
-        self.client.delete_generator(generator_id)
+        try:
+            self.client.delete_generator(generator_id)
+        except craft_err.CraftAiError:
+            return
 
     def test_create_generator_given_generator_id(self):
         """create_generator should succeed when given a string ID
@@ -61,8 +67,11 @@ class TestCreateGeneratorFailure(unittest.TestCase):
         self.client.create_agent(valid_data.VALID_CONFIGURATION, self.agent_id)
 
     def tearDown(self):
-        self.client.delete_generator(self.generator_id)
-        self.client.delete_agent(self.agent_id)
+        try:
+            self.client.delete_generator(self.generator_id)
+            self.client.delete_agent(self.agent_id)
+        except craft_err.CraftAiError:
+            return
 
     def clean_up_generator(self, generator_id):
         # Makes sure that no generator with the standard ID remains
