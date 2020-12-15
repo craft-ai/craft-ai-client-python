@@ -51,7 +51,7 @@ jobs:
         run: poetry run task lint
       - name: Run tests
         env: 
-          CRAFT_TOKEN: ${{ secrets.STANLEY_CRAFT_AI_BETA_TOKEN }}
+          CRAFT_TOKEN: ${{ secrets.STANLEY_CRAFT_AI_TOKEN }}
           JOB_ID: ${{ matrix.build_id }}
         run: poetry run pytest --durations=10 tests/*.py
       - name: Build package
