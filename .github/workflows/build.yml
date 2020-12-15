@@ -58,7 +58,7 @@ jobs:
         if: ${{ matrix.to_publish  == true }}
         run: poetry build
       - name: Save build artefact
-        if: ${{ matrix.to_publish  == true }}
+        if: ${{ matrix.to_publish  == true }} && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: actions/upload-artifact@master
         with:
           name: python-package
