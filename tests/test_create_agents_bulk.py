@@ -23,7 +23,10 @@ class TestCreateAgentsBulkSuccess(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         for agent_id in cls.client.list_agents():
-            cls.client.delete_agent(agent_id)
+            try:
+                cls.client.delete_agent(agent_id)
+            except craft_err.CraftAiError:
+                continue
 
     def setUp(self):
         # Makes sure that no agent with the same ID already exists
@@ -35,7 +38,10 @@ class TestCreateAgentsBulkSuccess(unittest.TestCase):
 
     def clean_up_agent(self, aid):
         # Makes sure that no agent with the standard ID remains
-        self.client.delete_agent(aid)
+        try:
+            self.client.delete_agent(aid)
+        except craft_err.CraftAiError:
+            return
 
     def clean_up_agents(self, aids):
         # Makes sure that no agent with the standard ID remains
@@ -335,7 +341,10 @@ class TestCreateAgentsBulkSomeFailure(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         for agent_id in cls.client.list_agents():
-            cls.client.delete_agent(agent_id)
+            try:
+                cls.client.delete_agent(agent_id)
+            except craft_err.CraftAiError:
+                continue
 
     def setUp(self):
         self.agent_id = generate_entity_id("test_create_agents_bulk_SomeFail")
@@ -351,7 +360,10 @@ class TestCreateAgentsBulkSomeFailure(unittest.TestCase):
     def clean_up_agents(self, aids):
         # Makes sure that no agent with the standard ID remains
         for aid in aids:
-            self.clean_up_agent(aid)
+            try:
+                self.clean_up_agent(aid)
+            except craft_err.CraftAiError:
+                continue
 
     def test_create_some_agents_with_existing_agent_id(self):
         """create_agents_bulk should succeed when some of the ID given already exist

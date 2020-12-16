@@ -209,7 +209,10 @@ class TestGetGroupDecisionTreesBulkSuccess(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         for agent_id in cls.agents:
-            cls.client.delete_agent(agent_id)
+            try:
+                cls.client.delete_agent(agent_id)
+            except craft_err.CraftAiError:
+                continue
 
     def setUp(self):
         for i in range(NB_DECISION_TREES_TO_GET):
@@ -352,7 +355,10 @@ class TestGetDecisionTreesBulkSomeFailure(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.client.delete_agent(cls.agent_id)
+        try:
+            cls.client.delete_agent(cls.agent_id)
+        except craft_err.CraftAiError:
+            return
 
     def setUp(self):
         # Makes sure that no agent with the same ID already exists

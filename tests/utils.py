@@ -2,7 +2,7 @@ from os import environ
 
 ENTITY_MAX_LEN = 36
 BASE_NAME_MAX_LEN = ENTITY_MAX_LEN - 3 - 3 - 2
-JOB_ID = environ.get("TRAVIS_JOB_ID", "loc")
+JOB_ID = environ.get("JOB_ID", "loc")
 
 counters = {}
 

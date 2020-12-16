@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 CRAFT_CFG = {"token": os.environ.get("CRAFT_TOKEN")}
-JOB_ID = os.environ.get("TRAVIS_JOB_ID", "loc")
+JOB_ID = os.environ.get("JOB_ID", "loc")
 
 print("Cleaning dangling agents and generators from test session.")
 craft_client = craft_ai.Client(CRAFT_CFG)

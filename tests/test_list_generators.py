@@ -21,9 +21,7 @@ class TestListGenerators(unittest.TestCase):
 
     def setUp(self):
         self.client.delete_agent(self.agent_id)
-        self.client.create_agent(
-            valid_data.VALID_GENERATOR_CONFIGURATION, self.agent_id
-        )
+        self.client.create_agent(valid_data.VALID_CONFIGURATION, self.agent_id)
         for generators_id in self.generators_id:
             self.client.delete_generator(generators_id)
             self.client.create_generator(
