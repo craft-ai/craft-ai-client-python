@@ -286,12 +286,25 @@ class TestPandasComplexAgentWithData(unittest.TestCase):
             self.agent_id, COMPLEX_AGENT_DATA.last_valid_index().value // 10 ** 9
         )
         test_df = COMPLEX_AGENT_DATA.iloc[:0, :]
-        test_df_copy = test_df.copy(deep=True)
-        df = CLIENT.decide_from_contexts_df(tree, test_df)
 
-        self.assertTrue(isinstance(df, pd.DataFrame))
-        self.assertEqual(len(df), 0)
-        self.assertTrue(test_df.equals(test_df_copy))
+        self.assertRaises(
+            craft_ai.errors.CraftAiBadRequestError,
+            CLIENT.decide_from_contexts_df,
+            tree,
+            test_df,
+        )
+
+    def test_decide_from_contexts_df_empty_df(self):
+        tree = CLIENT.get_agent_decision_tree(
+            self.agent_id, COMPLEX_AGENT_DATA.last_valid_index().value // 10 ** 9
+        )
+
+        self.assertRaises(
+            craft_ai.errors.CraftAiBadRequestError,
+            CLIENT.decide_from_contexts_df,
+            tree,
+            pd.DataFrame(),
+        )
 
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
