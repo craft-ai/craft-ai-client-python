@@ -2,6 +2,7 @@ import json
 import os
 
 import unittest
+import pandas as pd
 
 from craft_ai import Client, Interpreter, Time, errors as craft_err
 
@@ -96,3 +97,18 @@ class TestInterpreter(unittest.TestCase):
 
         for output in expected_context:
             self.assertEqual(rebuilt_context[output], expected_context[output])
+
+    def test_add_agent_operations_with_a_dataframe_should_fail(self):
+        """add_agent_operations should fail when given an invalid set of operations
+
+        It should raise an error upon request for posting an invalid set of
+        operations to an agent's configuration.
+        """
+        dataframeOperations = pd.DataFrame()
+        version = "v1"
+        tree_file = "one_color.json"
+        with open(os.path.join(TREES_DIR, version, tree_file)) as f:
+            tree = json.load(f)
+        self.assertRaises(
+            craft_err.CraftAiBadRequestError, CLIENT.decide, tree, dataframeOperations
+        )

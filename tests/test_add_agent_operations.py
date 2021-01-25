@@ -2,6 +2,7 @@ import unittest
 
 import copy
 import craft_ai
+import pandas as pd
 
 from . import settings
 from .utils import generate_entity_id
@@ -146,3 +147,17 @@ class TestAddOperationsFailure(unittest.TestCase):
                 self.agent_id,
                 invalid_data.INVALID_OPS_SET[ops_set],
             )
+
+    def test_add_agent_operations_with_a_dataframe_should_fail(self):
+        """add_agent_operations should fail when given an invalid set of operations
+
+        It should raise an error upon request for posting an invalid set of
+        operations to an agent's configuration.
+        """
+        dataframeOperations = pd.DataFrame()
+        self.assertRaises(
+            craft_ai.errors.CraftAiBadRequestError,
+            self.client.add_agent_operations,
+            self.agent_id,
+            dataframeOperations,
+        )
