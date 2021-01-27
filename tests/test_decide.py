@@ -98,7 +98,7 @@ class TestInterpreter(unittest.TestCase):
         for output in expected_context:
             self.assertEqual(rebuilt_context[output], expected_context[output])
 
-    def test_add_agent_operations_with_a_dataframe_should_fail(self):
+    def test_make_a_decision_on_dataframe_should_fail(self):
         """add_agent_operations should fail when given an invalid set of operations
 
         It should raise an error upon request for posting an invalid set of
@@ -106,7 +106,7 @@ class TestInterpreter(unittest.TestCase):
         """
         dataframeOperations = pd.DataFrame()
         version = "v1"
-        tree_file = "one_color.json"
+        tree_file = "oneColor.json"
         with open(os.path.join(TREES_DIR, version, tree_file)) as f:
             tree = json.load(f)
         self.assertRaises(
