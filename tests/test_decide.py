@@ -1,8 +1,12 @@
+from craft_ai.pandas import CRAFTAI_PANDAS_ENABLED
+
+if CRAFTAI_PANDAS_ENABLED:
+    import pandas as pd
+
 import json
 import os
 
 import unittest
-import pandas as pd
 
 from craft_ai import Client, Interpreter, Time, errors as craft_err
 
@@ -94,15 +98,15 @@ class TestInterpreter(unittest.TestCase):
         }
 
         # pylint: enable=W0212
-
         for output in expected_context:
             self.assertEqual(rebuilt_context[output], expected_context[output])
 
-    def test_make_a_decision_on_dataframe_should_fail(self):
-        """add_agent_operations should fail when given an invalid set of operations
 
-        It should raise an error upon request for posting an invalid set of
-        operations to an agent's configuration.
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestInterpreterWithPandas(unittest.TestCase):
+    def test_make_a_decision_on_dataframe_should_fail(self):
+        """Make a decision should fail when a dataframe is given to the basic client.
+        It should give an advice to the user to use the craft-ai pands client.
         """
         dataframeOperations = pd.DataFrame()
         version = "v1"

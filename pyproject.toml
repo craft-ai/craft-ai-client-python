@@ -26,7 +26,7 @@ pytest = "^5.4.3"
 pytest-subtests = "^0.3.1"
 
 [tool.poetry.extras]
- pandas = ["pandas"]
+pandas = ["pandas"]
 
 [tool.poetry.dev-dependencies]
 python-dotenv = "^0.5.1"

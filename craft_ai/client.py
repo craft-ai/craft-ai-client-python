@@ -668,7 +668,7 @@ class Client(object):
         self._check_entity_id(agent_id)
 
         # Suggest pandas client if a dataframe is provided
-        if hasattr(operations, 'shape'):
+        if hasattr(operations, "shape"):
             CraftAiBadRequestError(
                 """A dataframe of operations has been provided,
                 the pandas Client handle such type of data"""
@@ -1044,7 +1044,7 @@ class Client(object):
     def decide(tree, *args):
         for argument in args:
             # Suggest pandas client if a dataframe is provided
-            if hasattr(argument, 'shape'):
+            if hasattr(argument, "shape"):
                 raise CraftAiBadRequestError(
                     """A dataframe of operations has been provided,
                     the pandas Client handle such type of data"""
