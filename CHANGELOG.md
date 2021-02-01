@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Move CI to github action
 ### Fixed
 
+- Empty dataframe on add_agent_context_operation and decide will advise you to use the pandas client.
 - Empty payload now throw a proper error.
 - Fix bug on timezone when operations are added with bulk API
 - Fix bug on missing values when operations are added with bulk API

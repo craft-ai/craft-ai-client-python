@@ -1,3 +1,8 @@
+from craft_ai.pandas import CRAFTAI_PANDAS_ENABLED
+
+if CRAFTAI_PANDAS_ENABLED:
+    import pandas as pd
+
 import unittest
 
 import copy
@@ -146,3 +151,33 @@ class TestAddOperationsFailure(unittest.TestCase):
                 self.agent_id,
                 invalid_data.INVALID_OPS_SET[ops_set],
             )
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestAddOperationsFailureWithPandas(unittest.TestCase):
+    """Checks that the client fails properly when getting an agent with bad
+    input"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.client = craft_ai.Client(settings.CRAFT_CFG)
+        cls.agent_id = generate_entity_id("test_add_agent_operations")
+
+    def setUp(self):
+        self.client.delete_agent(self.agent_id)
+        self.client.create_agent(valid_data.VALID_CONFIGURATION, self.agent_id)
+
+    def tearDown(self):
+        self.client.delete_agent(self.agent_id)
+
+    def test_add_agent_operations_with_a_dataframe_should_fail(self):
+        """add_agent_operations should fail and give an advice when
+        a pandas DataFrame is given as operations
+        """
+        dataframeOperations = pd.DataFrame()
+        self.assertRaises(
+            craft_ai.errors.CraftAiBadRequestError,
+            self.client.add_agent_operations,
+            self.agent_id,
+            dataframeOperations,
+        )

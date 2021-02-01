@@ -667,6 +667,13 @@ class Client(object):
         # Raises an error when agent_id is invalid
         self._check_entity_id(agent_id)
 
+        # Suggest pandas client if a dataframe is provided
+        if hasattr(operations, "shape"):
+            CraftAiBadRequestError(
+                """A dataframe of operations has been provided,
+                the pandas Client handle such type of data"""
+            )
+
         # Extra header in addition to the main session's
         ct_header = {"Content-Type": "application/json; charset=utf-8"}
         offset = 0
@@ -1035,6 +1042,13 @@ class Client(object):
 
     @staticmethod
     def decide(tree, *args):
+        for argument in args:
+            # Suggest pandas client if a dataframe is provided
+            if hasattr(argument, "shape"):
+                raise CraftAiBadRequestError(
+                    """A dataframe of operations has been provided,
+                    the pandas Client handle such type of data"""
+                )
         return Interpreter.decide(tree, args)
 
     @staticmethod

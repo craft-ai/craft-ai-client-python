@@ -1,3 +1,8 @@
+from craft_ai.pandas import CRAFTAI_PANDAS_ENABLED
+
+if CRAFTAI_PANDAS_ENABLED:
+    import pandas as pd
+
 import json
 import os
 
@@ -93,6 +98,21 @@ class TestInterpreter(unittest.TestCase):
         }
 
         # pylint: enable=W0212
-
         for output in expected_context:
             self.assertEqual(rebuilt_context[output], expected_context[output])
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestInterpreterWithPandas(unittest.TestCase):
+    def test_make_a_decision_on_dataframe_should_fail(self):
+        """Make a decision should fail when a dataframe is given to the basic client.
+        It should give an advice to the user to use the craft-ai pands client.
+        """
+        dataframeOperations = pd.DataFrame()
+        version = "v1"
+        tree_file = "oneColor.json"
+        with open(os.path.join(TREES_DIR, version, tree_file)) as f:
+            tree = json.load(f)
+        self.assertRaises(
+            craft_err.CraftAiBadRequestError, CLIENT.decide, tree, dataframeOperations
+        )
