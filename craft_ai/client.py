@@ -95,6 +95,10 @@ class Client(object):
             cfg.get("decisionTreeRetrievalTimeout"), int
         ):
             cfg["decisionTreeRetrievalTimeout"] = 1000 * 60 * 5  # 5 minutes
+        if cfg.get("boostingDecisionRetrievalTimeout") is not False and not isinstance(
+            cfg.get("boostingDecisionRetrievalTimeout"), int
+        ):
+            cfg["boostingDecisionRetrievalTimeout"] = 1000 * 60 * 5  # 5 minutes
         if not isinstance(cfg.get("url"), str):
             cfg["url"] = "https://beta.craft.ai"
         if cfg.get("url").endswith("/"):
@@ -1054,6 +1058,146 @@ class Client(object):
                     the pandas Client handle such type of data"""
                 )
         return Interpreter.decide(tree, args)
+
+    ####################
+    # Boosting methods #
+    ####################
+
+    def get_agent_boosting_decision(
+        self, agent_id, fromTs, toTs, context
+    ):
+        """Get boosting decision.
+
+        :param str agent_id: the id of the agent whose tree to get. It
+        must be an str containing only characters in "a-zA-Z0-9_-" and
+        must be between 1 and 36 characters.
+        :param int fromTs: The boosting model will be build from this
+        timstamps.
+        :param int toTs: The boosting model will be build from this
+        timstamps.
+        :param dictionary context: Contains dictionnaries that has the
+        form given in the craft_ai documentation and the configuration
+        of the agent.
+
+        :return: boosting_decision.
+        :rtype: dict.
+
+        :raises CraftAiLongRequestTimeOutError: if the API doesn't get
+        the tree in the time given by the configuration.
+        """
+
+        entityType = "agents"
+
+        # Convert datetime to timestamp
+        if isinstance(fromTs, datetime.datetime):
+            timestamp = time.mktime(timestamp.timetuple())
+
+        if isinstance(toTs, datetime.datetime):
+            timestamp = time.mktime(timestamp.timetuple())
+
+        # Raises an error when agent_id is invalid
+        self._check_entity_id(agent_id)
+        if self._config["boostingDecisionRetrievalTimeout"] is False:
+            # Don't retry
+            return self._get_entity_boosting_decision(agent_id, window, entity_type, context)
+
+        start = current_time_ms()
+        while True:
+            now = current_time_ms()
+            if now - start > self._config["boostingDecisionRetrievalTimeout"]:
+                # Client side timeout
+                raise CraftAiLongRequestTimeOutError()
+            try:
+                return self._get_entity_boosting_decision(agent_id, window, entity_type, context)
+            except CraftAiLongRequestTimeOutError:
+                # Do nothing and continue.
+                continue
+    def get_generator_boosting_decision(
+        self, generator_id, fromTs, toTs, context
+    ):
+        """Get boosting decision.
+
+        :param str generator_id: the id of the agent whose tree to get. It
+        must be an str containing only characters in "a-zA-Z0-9_-" and
+        must be between 1 and 36 characters.
+        :param int fromTs: The boosting model will be build from this
+        timstamps.
+        :param int toTs: The boosting model will be build from this
+        timstamps.
+        :param dictionary context: Contains dictionnaries that has the
+        form given in the craft_ai documentation and the configuration
+        of the agent.
+
+        :return: boosting_decision.
+        :rtype: dict.
+
+        :raises CraftAiLongRequestTimeOutError: if the API doesn't get
+        the tree in the time given by the configuration.
+        """
+
+        entityType = "generators"
+
+        # Convert datetime to timestamp
+        if isinstance(fromTs, datetime.datetime):
+            fromTs = time.mktime(timestamp.timetuple())
+
+        if isinstance(toTs, datetime.datetime):
+            toTs = time.mktime(timestamp.timetuple())
+
+        window = [fromTs, toTs]
+        # Raises an error when generator_id is invalid
+        self._check_entity_id(generator_id)
+        if self._config["boostingDecisionRetrievalTimeout"] is False:
+            # Don't retry
+            return self._get_entity_boosting_decision(generator_id, window, entity_type, context)
+
+        start = current_time_ms()
+        while True:
+            now = current_time_ms()
+            if now - start > self._config["boostingDecisionRetrievalTimeout"]:
+                # Client side timeout
+                raise CraftAiLongRequestTimeOutError()
+            try:
+                return self._get_entity_boosting_decision(generator_id, window, entity_type, context)
+            except CraftAiLongRequestTimeOutError:
+                # Do nothing and continue.
+                continue
+
+    def _get_entity_boosting_decision(
+        self, entity_id, window, entity_type, context
+    ):
+        """Tool for the function get_agent_decision_tree.
+
+        :param str entity_id: the id of the agent whose tree to get. It
+        must be an str containing only characters in "a-zA-Z0-9_-" and
+        must be between 1 and 36 characters.
+        :param int timestamp: Optional. The decision tree is comptuted
+        at this timestamp.
+        :default timestamp: None, means that we get the tree computed
+        with all its context history.
+        :default version: default version of the tree.
+
+        :return: decision tree.
+        :rtype: dict.
+        """
+        self._requests_session.headers["x-craft-ai-tree-version"] = version
+
+        # If we give no timestamp the default behaviour is to give
+        # the tree from the latest timestamp
+        req_url = "{}/{}/boosting/decision".format(
+            self._base_url, agent_id, entity_type, timestamp
+        )
+        payload = {
+            "window": window,
+            "context": context
+        }
+        json_pl = json.dumps(payload)
+
+        resp = self._requests_session.post(req_url, data=json_pl)
+
+        decision = self._decode_response(resp)
+
+        return decision
 
     @staticmethod
     def _parse_body(response):

@@ -13,6 +13,14 @@ VALID_CONFIGURATION = {
     "output": VALID_OUTPUT,
     "time_quantum": VALID_TQ,
 }
+VALID_NUM_ROUND = 100
+VALID_LEARNING_RATE = 0.1
+VALID_BOOSTING_CONFIGURATION = {
+    "context": VALID_CONTEXT,
+    "output": VALID_OUTPUT,
+    "num_iterations": VALID_NUM_ROUND,
+    "learning_rate": VALID_LEARNING_RATE
+}
 
 VALID_GENERATOR_CONFIGURATION = {
     "context": VALID_CONTEXT,
@@ -22,6 +30,14 @@ VALID_GENERATOR_CONFIGURATION = {
     "learning_period": VALID_LEARNING_PERIOD,
     "tree_max_operations": VALID_TREE_MAX_OPERATIONS,
     "filter": ["test_filter"],
+}
+
+VALID_GENERATOR_BOOSTING_CONFIGURATION = {
+    "context": VALID_CONTEXT,
+    "output": VALID_OUTPUT,
+    "num_iterations": VALID_NUM_ROUND,
+    "learning_rate": VALID_LEARNING_RATE,
+    "filter": ["test_filter"]
 }
 
 VALID_LARGE_CONFIGURATION = {
