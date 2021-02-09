@@ -1063,9 +1063,7 @@ class Client(object):
     # Boosting methods #
     ####################
 
-    def get_agent_boosting_decision(
-        self, agent_id, fromTs, toTs, context
-    ):
+    def get_agent_boosting_decision(self, agent_id, fromTs, toTs, context):
         """Get boosting decision.
 
         :param str agent_id: the id of the agent whose tree to get. It
@@ -1099,7 +1097,9 @@ class Client(object):
         self._check_entity_id(agent_id)
         if self._config["boostingDecisionRetrievalTimeout"] is False:
             # Don't retry
-            return self._get_entity_boosting_decision(agent_id, window, entity_type, context)
+            return self._get_entity_boosting_decision(
+                agent_id, window, entity_type, context
+            )
 
         start = current_time_ms()
         while True:
@@ -1108,13 +1108,14 @@ class Client(object):
                 # Client side timeout
                 raise CraftAiLongRequestTimeOutError()
             try:
-                return self._get_entity_boosting_decision(agent_id, window, entity_type, context)
+                return self._get_entity_boosting_decision(
+                    agent_id, window, entity_type, context
+                )
             except CraftAiLongRequestTimeOutError:
                 # Do nothing and continue.
                 continue
-    def get_generator_boosting_decision(
-        self, generator_id, fromTs, toTs, context
-    ):
+
+    def get_generator_boosting_decision(self, generator_id, fromTs, toTs, context):
         """Get boosting decision.
 
         :param str generator_id: the id of the agent whose tree to get. It
@@ -1149,7 +1150,9 @@ class Client(object):
         self._check_entity_id(generator_id)
         if self._config["boostingDecisionRetrievalTimeout"] is False:
             # Don't retry
-            return self._get_entity_boosting_decision(generator_id, window, entity_type, context)
+            return self._get_entity_boosting_decision(
+                generator_id, window, entity_type, context
+            )
 
         start = current_time_ms()
         while True:
@@ -1158,14 +1161,14 @@ class Client(object):
                 # Client side timeout
                 raise CraftAiLongRequestTimeOutError()
             try:
-                return self._get_entity_boosting_decision(generator_id, window, entity_type, context)
+                return self._get_entity_boosting_decision(
+                    generator_id, window, entity_type, context
+                )
             except CraftAiLongRequestTimeOutError:
                 # Do nothing and continue.
                 continue
 
-    def _get_entity_boosting_decision(
-        self, entity_id, window, entity_type, context
-    ):
+    def _get_entity_boosting_decision(self, entity_id, window, entity_type, context):
         """Tool for the function get_agent_decision_tree.
 
         :param str entity_id: the id of the agent whose tree to get. It
@@ -1187,10 +1190,7 @@ class Client(object):
         req_url = "{}/{}/boosting/decision".format(
             self._base_url, agent_id, entity_type, timestamp
         )
-        payload = {
-            "window": window,
-            "context": context
-        }
+        payload = {"window": window, "context": context}
         json_pl = json.dumps(payload)
 
         resp = self._requests_session.post(req_url, data=json_pl)

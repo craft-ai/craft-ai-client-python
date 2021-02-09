@@ -34,7 +34,7 @@ class TestGetgeneratorBoostingDecisionFailure(unittest.TestCase):
                 invalid_data.UNDEFINED_KEY[empty_id],
                 valid_data.VALID_TIMESTAMP,
                 valid_data.VALID_LAST_TIMESTAMP,
-                valid_data.VALID_OPERATIONS_SET[0]
+                valid_data.VALID_OPERATIONS_SET[0],
             )
 
     # def test_get_decision_boosting_with_invalid_from_timestamp(self):

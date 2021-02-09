@@ -19,7 +19,7 @@ VALID_BOOSTING_CONFIGURATION = {
     "context": VALID_CONTEXT,
     "output": VALID_OUTPUT,
     "num_iterations": VALID_NUM_ROUND,
-    "learning_rate": VALID_LEARNING_RATE
+    "learning_rate": VALID_LEARNING_RATE,
 }
 
 VALID_GENERATOR_CONFIGURATION = {
@@ -37,7 +37,7 @@ VALID_GENERATOR_BOOSTING_CONFIGURATION = {
     "output": VALID_OUTPUT,
     "num_iterations": VALID_NUM_ROUND,
     "learning_rate": VALID_LEARNING_RATE,
-    "filter": ["test_filter"]
+    "filter": ["test_filter"],
 }
 
 VALID_LARGE_CONFIGURATION = {
