@@ -791,7 +791,7 @@ class Client(object):
         referenced non existing agents or one of the operations is invalid.
         """
         # Check all ids, raise an error if all ids are invalid
-        valid_indices, invalid_indices, invalid_agents = self._check_entity_id_bulk(payload)
+        valid_indices, _, invalid_agents = self._check_entity_id_bulk(payload)
         valid_payload = [payload[i] for i in valid_indices]
 
         chunked_data = []
