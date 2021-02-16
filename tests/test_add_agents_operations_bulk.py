@@ -289,9 +289,6 @@ class TestAddOperationsBulkSomeFailure(unittest.TestCase):
             )
 
         resp = self.client.add_agents_operations_bulk(payload)
-        print(resp)
-        print(len(resp))
-        print(len(invalid_data.UNDEFINED_KEY))
 
         self.assertIsInstance(resp, list)
         self.assertEqual(resp[0].get("id"), self.agent_id)
