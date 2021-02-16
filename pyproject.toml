@@ -35,7 +35,7 @@ flake8 = "^3.7.9"
 taskipy = "^1.1.3"
 
 [tool.taskipy.tasks]
-test = "poetry run pytest --durations=10 tests/test_add_agents_operations_bulk.py"
+test = "poetry run pytest --durations=10 tests/*.py"
 lint = "task lint_black && task lint_flake8"
 lint_black = "black . --check --diff"
 lint_flake8 = "flake8 ."
