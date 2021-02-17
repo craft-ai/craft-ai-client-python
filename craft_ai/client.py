@@ -766,8 +766,6 @@ class Client(object):
 
         if invalid_agents != []:
             for invalid_agent in invalid_agents:
-                invalid_agent["status"] = 404
-                invalid_agent["added_operations_count"] = 0
                 responses.append(invalid_agent)
 
         return responses
