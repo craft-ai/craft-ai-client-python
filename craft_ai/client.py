@@ -1063,15 +1063,15 @@ class Client(object):
     # Boosting methods #
     ####################
 
-    def get_agent_boosting_decision(self, agent_id, fromTs, toTs, context):
+    def get_agent_boosting_decision(self, agent_id, from_ts, to_ts, context):
         """Get boosting decision.
 
         :param str agent_id: the id of the agent whose tree to get. It
         must be an str containing only characters in "a-zA-Z0-9_-" and
         must be between 1 and 36 characters.
-        :param int fromTs: The boosting model will be build from this
+        :param int from_ts: The boosting model will be build from this
         timstamps.
-        :param int toTs: The boosting model will be build from this
+        :param int to_ts: The boosting model will be build from this
         timstamps.
         :param dictionary context: Contains dictionnaries that has the
         form given in the craft_ai documentation and the configuration
@@ -1084,15 +1084,16 @@ class Client(object):
         the tree in the time given by the configuration.
         """
 
-        entityType = "agents"
+        entity_type = "agents"
 
         # Convert datetime to timestamp
-        if isinstance(fromTs, datetime.datetime):
-            timestamp = time.mktime(timestamp.timetuple())
+        if isinstance(from_ts, datetime.datetime):
+            from_ts = time.mktime(from_ts.timetuple())
 
-        if isinstance(toTs, datetime.datetime):
-            timestamp = time.mktime(timestamp.timetuple())
+        if isinstance(to_ts, datetime.datetime):
+            to_ts = time.mktime(to_ts.timetuple())
 
+        window = [from_ts, to_ts]
         # Raises an error when agent_id is invalid
         self._check_entity_id(agent_id)
         if self._config["boostingDecisionRetrievalTimeout"] is False:
@@ -1115,15 +1116,15 @@ class Client(object):
                 # Do nothing and continue.
                 continue
 
-    def get_generator_boosting_decision(self, generator_id, fromTs, toTs, context):
+    def get_generator_boosting_decision(self, generator_id, from_ts, to_ts, context):
         """Get boosting decision.
 
         :param str generator_id: the id of the agent whose tree to get. It
         must be an str containing only characters in "a-zA-Z0-9_-" and
         must be between 1 and 36 characters.
-        :param int fromTs: The boosting model will be build from this
+        :param int from_ts: The boosting model will be build from this
         timstamps.
-        :param int toTs: The boosting model will be build from this
+        :param int to_ts: The boosting model will be build from this
         timstamps.
         :param dictionary context: Contains dictionnaries that has the
         form given in the craft_ai documentation and the configuration
@@ -1136,16 +1137,16 @@ class Client(object):
         the tree in the time given by the configuration.
         """
 
-        entityType = "generators"
+        entity_type = "generators"
 
         # Convert datetime to timestamp
-        if isinstance(fromTs, datetime.datetime):
-            fromTs = time.mktime(timestamp.timetuple())
+        if isinstance(from_ts, datetime.datetime):
+            from_ts = time.mktime(from_ts.timetuple())
 
-        if isinstance(toTs, datetime.datetime):
-            toTs = time.mktime(timestamp.timetuple())
+        if isinstance(to_ts, datetime.datetime):
+            to_ts = time.mktime(to_ts.timetuple())
 
-        window = [fromTs, toTs]
+        window = [from_ts, to_ts]
         # Raises an error when generator_id is invalid
         self._check_entity_id(generator_id)
         if self._config["boostingDecisionRetrievalTimeout"] is False:
@@ -1183,17 +1184,17 @@ class Client(object):
         :return: decision tree.
         :rtype: dict.
         """
-        self._requests_session.headers["x-craft-ai-tree-version"] = version
 
+        ct_header = {"Content-Type": "application/json; charset=utf-8"}
         # If we give no timestamp the default behaviour is to give
         # the tree from the latest timestamp
-        req_url = "{}/{}/boosting/decision".format(
-            self._base_url, agent_id, entity_type, timestamp
+        req_url = "{}/{}/{}/boosting/decision".format(
+            self._base_url, entity_type, entity_id
         )
-        payload = {"window": window, "context": context}
+        payload = {"timeWindow": window, "context": context}
         json_pl = json.dumps(payload)
 
-        resp = self._requests_session.post(req_url, data=json_pl)
+        resp = self._requests_session.post(req_url, headers=ct_header, data=json_pl)
 
         decision = self._decode_response(resp)
 
