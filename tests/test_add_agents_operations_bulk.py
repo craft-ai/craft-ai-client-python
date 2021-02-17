@@ -296,7 +296,6 @@ class TestAddOperationsBulkSomeFailure(unittest.TestCase):
         self.assertFalse("error" in resp[0].keys())
         self.assertTrue(len(resp) == len(payload))
         for i in range(len(invalid_data.UNDEFINED_KEY)):
-            print(i)
             self.assertTrue("error" in resp[i + 1].keys())
 
         self.addCleanup(self.clean_up_agent, self.agent_id)
