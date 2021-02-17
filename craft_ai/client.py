@@ -710,7 +710,7 @@ class Client(object):
             "added_operations_count": added_operations_count,
         }
 
-    def _add_agents_operations_bulk(self, chunked_data):
+    def _add_agents_operations_bulk(self, chunked_data, invalid_agents):
         """Tool for the function add_agents_operations_bulk. It send the requests to
         add the operations to the agents.
 
@@ -764,6 +764,10 @@ class Client(object):
         if responses == []:
             raise CraftAiBadRequestError("Invalid or empty set of operations given")
 
+        if invalid_agents != []:
+            for invalid_agent in invalid_agents:
+                responses.append(invalid_agent)
+
         return responses
 
     def add_agents_operations_bulk(self, payload):
@@ -785,7 +789,7 @@ class Client(object):
         referenced non existing agents or one of the operations is invalid.
         """
         # Check all ids, raise an error if all ids are invalid
-        valid_indices, _, _ = self._check_entity_id_bulk(payload)
+        valid_indices, _, invalid_agents = self._check_entity_id_bulk(payload)
         valid_payload = [payload[i] for i in valid_indices]
 
         chunked_data = []
@@ -811,7 +815,7 @@ class Client(object):
         if current_chunk:
             chunked_data.append(current_chunk)
 
-        return self._add_agents_operations_bulk(chunked_data)
+        return self._add_agents_operations_bulk(chunked_data, invalid_agents)
 
     def _get_agent_operations_pages(self, url, ops_list):
         if url is None:
