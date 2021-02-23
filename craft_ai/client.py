@@ -1069,10 +1069,10 @@ class Client(object):
         :param str agent_id: the id of the agent whose tree to get. It
         must be an str containing only characters in "a-zA-Z0-9_-" and
         must be between 1 and 36 characters.
-        :param int from_ts: The boosting model will be build from this
-        timstamps.
-        :param int to_ts: The boosting model will be build from this
-        timstamps.
+        :param int from_ts: The boosting model will be built from this
+        timestamp.
+        :param int to_ts: The boosting model will be built until this
+        timestamp.
         :param dictionary context: Contains dictionnaries that has the
         form given in the craft_ai documentation and the configuration
         of the agent.
@@ -1122,10 +1122,10 @@ class Client(object):
         :param str generator_id: the id of the agent whose tree to get. It
         must be an str containing only characters in "a-zA-Z0-9_-" and
         must be between 1 and 36 characters.
-        :param int from_ts: The boosting model will be build from this
-        timstamps.
-        :param int to_ts: The boosting model will be build from this
-        timstamps.
+        :param int from_ts: The boosting model will be built from this
+        timestamp.
+        :param int to_ts: The boosting model will be built until this
+        timestamp.
         :param dictionary context: Contains dictionnaries that has the
         form given in the craft_ai documentation and the configuration
         of the agent.
@@ -1170,18 +1170,21 @@ class Client(object):
                 continue
 
     def _get_entity_boosting_decision(self, entity_id, window, entity_type, context):
-        """Tool for the function get_agent_decision_tree.
+        """Tool for the function get_agent_boosting_decision
+        and get_generator_boosting_decision.
 
         :param str entity_id: the id of the agent whose tree to get. It
         must be an str containing only characters in "a-zA-Z0-9_-" and
         must be between 1 and 36 characters.
-        :param int timestamp: Optional. The decision tree is comptuted
-        at this timestamp.
-        :default timestamp: None, means that we get the tree computed
-        with all its context history.
-        :default version: default version of the tree.
+        :param array window: Time window over which samples are selected
+        to build the model
+        :param entity_type: the entity type corresponding to the entity_uri
+        agents or generators.
+        :param: Contains dictionnaries that has the
+        form given in the craft_ai documentation and the configuration
+        of the entity.
 
-        :return: decision tree.
+        :return: decision.
         :rtype: dict.
         """
 

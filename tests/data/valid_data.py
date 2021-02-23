@@ -24,6 +24,7 @@ VALID_BOOSTING_CONFIGURATION = {
     "num_iterations": VALID_NUM_ROUND,
     "learning_rate": VALID_LEARNING_RATE,
     "tree_max_depth": VALID_TREE_MAX_DEPTH,
+    "tree_max_operations": VALID_TREE_MAX_OPERATIONS,
     "operations_as_events": True,
 }
 
@@ -43,6 +44,7 @@ VALID_GENERATOR_BOOSTING_CONFIGURATION = {
     "output": VALID_OUTPUT,
     "num_iterations": VALID_NUM_ROUND,
     "learning_rate": VALID_LEARNING_RATE,
+    "tree_max_operations": VALID_TREE_MAX_OPERATIONS,
     "operations_as_events": True,
     "filter": ["test_filter"],
 }
