@@ -85,4 +85,7 @@ jobs:
         with:
           poetry-version: 1.1.4
       - name: Build and publish package
-        run: poetry publish --password ${{ secrets.PYPI_CRAFT_AI_TOKEN }} --username ${{ secrets.PYPI_CRAFT_AI_USER }}
+        env:
+          POETRY_HTTP_BASIC_PYPI_USERNAME : ${{ secrets.PYPI_CRAFT_AI_USER }}
+          POETRY_HTTP_BASIC_PYPI_PASSWORD : ${{ secrets.PYPI_CRAFT_AI_TOKEN }} 
+        run: poetry publish 
