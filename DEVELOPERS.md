@@ -41,7 +41,7 @@
 
 1. Make sure the build of the master branch is passing
 
-  [![Build](https://img.shields.io/travis/craft-ai/craft-ai-client-python/master.svg?style=flat-square)](https://travis-ci.org/craft-ai/craft-ai-client-python)
+  [![Build Status](https://github.com/craft-ai/craft-ai-client-python/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/craft-ai/craft-ai-client-python/actions)
 
 2. Checkout the master branch locally.
 
@@ -83,4 +83,4 @@
 
   > This will trigger the publishing of this new version to
   > [PyPI](https://pypi.python.org/pypi/craft-ai) by
-  > [Travis](https://travis-ci.org/craft-ai/craft-ai-client-python)
+  > [Github actions](https://github.com/craft-ai/craft-ai-client-python/actions)

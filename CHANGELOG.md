@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix test using bad formated configuration
 - Add catch around cleanups in tests
 - Fix return value of add_agents_operations_bulk when valid and invalid agent's id given.
+- Fix reference to travis in docs.
 
 ## [2.1.0](https://github.com/craft-ai/craft-ai-client-python/compare/v2.0.0...v2.1.0) - 2020-10-26 ##
 
