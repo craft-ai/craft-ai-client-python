@@ -40,13 +40,12 @@ class TestGetGeneratorBoostingDecisionSuccess(unittest.TestCase):
         context = {
             "tz": "+02:00",
             "presence": "occupant",
-            "lightIntensity": 1,
-            "lightbulbColor": "#ffffff",
+            "lightIntensity": 1
         }
         decision = self.client.get_generator_boosting_decision(
             self.generator_id, first_timestamp, last_timestamp, context,
         )
-        self.assertEqual(decision["predictedValue"], "#ffffff")
+        self.assertEqual(decision["output"]["predicted_value"], "#ffffff")
         self.addCleanup(self.clean_up_agent, self.agent_id)
         self.addCleanup(self.clean_up_generator, self.generator_id)
 

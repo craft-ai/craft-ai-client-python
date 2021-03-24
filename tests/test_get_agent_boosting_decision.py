@@ -31,13 +31,12 @@ class TestGetAgentBoostingDecisionSuccess(unittest.TestCase):
         context = {
             "tz": "+02:00",
             "presence": "occupant",
-            "lightIntensity": 1,
-            "lightbulbColor": "#ffffff",
+            "lightIntensity": 1
         }
         decision = self.client.get_agent_boosting_decision(
             self.agent_id, first_timestamp, last_timestamp, context,
         )
-        self.assertEqual(decision["predictedValue"], "#ffffff")
+        self.assertEqual(decision["output"]["predicted_value"], "pink")
         self.addCleanup(self.clean_up_agent, self.agent_id)
 
 
