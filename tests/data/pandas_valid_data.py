@@ -6,6 +6,23 @@ from craft_ai.pandas import MISSING_VALUE, OPTIONAL_VALUE
 NB_OPERATIONS = 300
 NB_MANY_OPERATIONS = 1000
 
+SIMPLE_AGENT_BOOSTING_CONFIGURATION = {
+    "model_type": "boosting",
+    "context": {
+        "a": {"type": "continuous"},
+        "b": {"type": "continuous"},
+        "c": {"type": "continuous"},
+        "d": {"type": "continuous"},
+        "e": {"type": "continuous"},
+    },
+    "output": ["a"],
+    "min_samples_per_leaf": 1,
+    "operations_as_events": True,
+    "tree_max_operations": 50000,
+    "num_iterations": 20,
+    "learning_rate": 0.5
+}
+
 SIMPLE_AGENT_CONFIGURATION = {
     "context": {
         "a": {"type": "continuous"},

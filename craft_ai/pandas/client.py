@@ -3,7 +3,7 @@ import pandas as pd
 
 from .. import Client as VanillaClient
 from ..constants import DEFAULT_DECISION_TREE_VERSION
-from ..errors import CraftAiBadRequestError
+from ..errors import CraftAiBadRequestError, CraftAiNullDecisionError
 from .interpreter import Interpreter
 from .utils import format_input, is_valid_property_value, create_timezone_df
 
@@ -205,3 +205,50 @@ class Client(VanillaClient):
         return super(Client, self).get_generator_decision_tree(
             generator_id, timestamp, version
         )
+
+    def pandas_generator_decide_from_row(self, generator_id, from_ts, to_ts, params):
+        context = {
+            feature_name: format_input(value)
+            for feature_name, value in zip(
+                params["feature_names"], params["context_ops"][1:]
+            )
+            if is_valid_property_value(feature_name, value)
+        }
+        try:
+            decision = super(Client, self).get_generator_boosting_decision(
+                generator_id, from_ts, to_ts, context
+            )
+            return {"output_predicted_value" : decision["output"]["predicted_value"]}
+
+        except CraftAiNullDecisionError as e:
+            return {"error": e.message}
+
+    def decide_generator_boosting_from_contexts_df(self, generator_id, from_ts, to_ts, contexts_df):
+        if isinstance(contexts_df, pd.DataFrame):
+            if contexts_df.empty:
+                raise CraftAiBadRequestError(
+                    "Invalid dataframe given, dataframe is empty."
+                )
+            if not isinstance(contexts_df.index, pd.DatetimeIndex):
+                raise CraftAiBadRequestError(
+                    "Invalid dataframe given, it is not time indexed."
+                )
+            if contexts_df.index.tz is None:
+                raise CraftAiBadRequestError(
+                    """tz-naive DatetimeIndex are not supported,
+                                     it must be tz-aware."""
+                )
+        else:
+            raise CraftAiBadRequestError("Invalid data given, it is not a DataFrame.")
+
+        df = contexts_df.copy(deep=True)
+
+        predictions_iter = (
+            self.pandas_generator_decide_from_row(generator_id, from_ts, to_ts, {
+                "context_ops": row,
+                "feature_names": df.columns.values
+                }
+            )
+            for row in df.itertuples(name=None)
+        )
+        return pd.DataFrame(predictions_iter, index=df.index)
