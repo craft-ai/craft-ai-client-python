@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.1.1...HEAD) ##
 
+### Added
+
+- Add new boosting decision routes.
+
 ## [2.1.1](https://github.com/craft-ai/craft-ai-client-python/compare/v2.1.0...v2.1.1) - 2021-02-25 ##
 
 ### Changed
 
 - Move CI to github action
+
 ### Fixed
 
 - Empty dataframe on add_agent_context_operation and decide will advise you to use the pandas client.
