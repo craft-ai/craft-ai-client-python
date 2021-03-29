@@ -19,7 +19,9 @@ class TestGetAgentBoostingDecisionSuccess(unittest.TestCase):
     def setUp(self):
         self.client.delete_agent(self.agent_id)
         self.client.create_agent(valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id)
-        self.client.add_agent_operations(self.agent_id, valid_data.VALID_OPERATIONS_SET_COMPLETE_1)
+        self.client.add_agent_operations(
+            self.agent_id, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
+        )
 
     def clean_up_agent(self, aid):
         # Makes sure that no agent with the standard ID remains
@@ -28,11 +30,7 @@ class TestGetAgentBoostingDecisionSuccess(unittest.TestCase):
     def test_get_decision_boosting_with_correct_input(self):
         first_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[0]["timestamp"]
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
-        context = {
-            "tz": "+02:00",
-            "presence": "occupant",
-            "lightIntensity": 1
-        }
+        context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
         decision = self.client.get_agent_boosting_decision(
             self.agent_id, first_timestamp, last_timestamp, context,
         )

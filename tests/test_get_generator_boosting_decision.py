@@ -37,11 +37,7 @@ class TestGetGeneratorBoostingDecisionSuccess(unittest.TestCase):
     def test_get_decision_boosting_with_correct_input(self):
         first_timestamp = valid_data.VALID_OPERATIONS_SET[0]["timestamp"]
         last_timestamp = valid_data.VALID_OPERATIONS_SET[-1]["timestamp"]
-        context = {
-            "tz": "+02:00",
-            "presence": "occupant",
-            "lightIntensity": 1
-        }
+        context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
         decision = self.client.get_generator_boosting_decision(
             self.generator_id, first_timestamp, last_timestamp, context,
         )
