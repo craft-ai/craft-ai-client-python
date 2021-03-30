@@ -20,7 +20,7 @@ SIMPLE_AGENT_BOOSTING_CONFIGURATION = {
     "operations_as_events": True,
     "tree_max_operations": 50000,
     "num_iterations": 20,
-    "learning_rate": 0.5
+    "learning_rate": 0.5,
 }
 
 SIMPLE_AGENT_CONFIGURATION = {

@@ -19,7 +19,9 @@ if CRAFTAI_PANDAS_ENABLED:
     GENERATOR_ID_BASE = "test_pandas_generator"
 
     SIMPLE_AGENT_CONFIGURATION = pandas_valid_data.SIMPLE_AGENT_CONFIGURATION
-    SIMPLE_AGENT_BOOSTING_CONFIGURATION  = pandas_valid_data.SIMPLE_AGENT_BOOSTING_CONFIGURATION
+    SIMPLE_AGENT_BOOSTING_CONFIGURATION = (
+        pandas_valid_data.SIMPLE_AGENT_BOOSTING_CONFIGURATION
+    )
     SIMPLE_AGENT_DATA = pandas_valid_data.SIMPLE_AGENT_DATA
     SIMPLE_AGENT_MANY_DATA = pandas_valid_data.SIMPLE_AGENT_MANY_DATA
     COMPLEX_AGENT_CONFIGURATION = pandas_valid_data.COMPLEX_AGENT_CONFIGURATION
@@ -544,22 +546,20 @@ class TestPandasGeneratorWithOperation(unittest.TestCase):
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
 class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
-
     def setUp(self):
         self.agent_1_id = generate_entity_id(AGENT_ID_1_BASE + "BoostGeneratorWithOp")
         self.agent_2_id = generate_entity_id(AGENT_ID_2_BASE + "BoostGeneratorWithOp")
-        self.generator_id = generate_entity_id(GENERATOR_ID_BASE + "BoostGeneratorWithOp")
-
+        self.generator_id = generate_entity_id(
+            GENERATOR_ID_BASE + "BoostGeneratorWithOp"
+        )
         CLIENT.delete_agent(self.agent_1_id)
         CLIENT.delete_agent(self.agent_2_id)
         CLIENT.delete_generator(self.generator_id)
-        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION , self.agent_1_id)
-        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION , self.agent_2_id)
+        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_1_id)
+        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_2_id)
         CLIENT.add_agent_operations(self.agent_1_id, SIMPLE_AGENT_DATA)
         CLIENT.add_agent_operations(self.agent_2_id, SIMPLE_AGENT_MANY_DATA)
-        generator_configuration = copy.deepcopy(
-            SIMPLE_AGENT_BOOSTING_CONFIGURATION
-        )
+        generator_configuration = copy.deepcopy(SIMPLE_AGENT_BOOSTING_CONFIGURATION)
         generator_configuration["filter"] = [self.agent_1_id, self.agent_2_id]
         CLIENT.create_generator(generator_configuration, self.generator_id)
 
@@ -573,13 +573,13 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
             randn(4, 5),
             columns=["a", "b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
-                "Europe/Paris"
-            )
+                "Europe/Paris",
+            ),
         )
         decisions = CLIENT.decide_generator_boosting_from_contexts_df(
             self.generator_id,
             SIMPLE_AGENT_DATA.last_valid_index().value // 10 ** 9,
             SIMPLE_AGENT_MANY_DATA.last_valid_index().value // 10 ** 9,
-            context_df
+            context_df,
         )
         self.assertEqual(decisions.shape[0], 4)

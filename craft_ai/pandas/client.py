@@ -218,12 +218,14 @@ class Client(VanillaClient):
             decision = super(Client, self).get_generator_boosting_decision(
                 generator_id, from_ts, to_ts, context
             )
-            return {"output_predicted_value" : decision["output"]["predicted_value"]}
+            return {"output_predicted_value": decision["output"]["predicted_value"]}
 
         except CraftAiNullDecisionError as e:
             return {"error": e.message}
 
-    def decide_generator_boosting_from_contexts_df(self, generator_id, from_ts, to_ts, contexts_df):
+    def decide_generator_boosting_from_contexts_df(
+        self, generator_id, from_ts, to_ts, contexts_df
+    ):
         if isinstance(contexts_df, pd.DataFrame):
             if contexts_df.empty:
                 raise CraftAiBadRequestError(
@@ -244,10 +246,11 @@ class Client(VanillaClient):
         df = contexts_df.copy(deep=True)
 
         predictions_iter = (
-            self.pandas_generator_decide_from_row(generator_id, from_ts, to_ts, {
-                "context_ops": row,
-                "feature_names": df.columns.values
-                }
+            self.pandas_generator_decide_from_row(
+                generator_id,
+                from_ts,
+                to_ts,
+                {"context_ops": row, "feature_names": df.columns.values},
             )
             for row in df.itertuples(name=None)
         )
