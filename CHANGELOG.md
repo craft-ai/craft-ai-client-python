@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Add new boosting decision routes.
-
+- Add boosting decision route to pandas client.
 ## [2.1.1](https://github.com/craft-ai/craft-ai-client-python/compare/v2.1.0...v2.1.1) - 2021-02-25 ##
 
 ### Changed

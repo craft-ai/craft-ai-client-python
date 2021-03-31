@@ -545,6 +545,34 @@ class TestPandasGeneratorWithOperation(unittest.TestCase):
 
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestPandasBoostingSimpleAgent(unittest.TestCase):
+    def setUp(self):
+        self.agent_id = generate_entity_id(AGENT_ID_1_BASE + "BoostingAgentWData")
+        CLIENT.delete_agent(self.agent_id)
+        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_id)
+        CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_DATA)
+
+    def tearDown(self):
+        CLIENT.delete_agent(self.agent_id)
+
+    def test_decide_boosting_from_contexts_df(self):
+        context_df = pd.DataFrame(
+            randn(4, 4),
+            columns=["b", "c", "d", "e"],
+            index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
+                "Europe/Paris",
+            ),
+        )
+        decisions = CLIENT.decide_boosting_from_contexts_df(
+            self.agent_id,
+            SIMPLE_AGENT_DATA.first_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_DATA.last_valid_index().value // 10 ** 9,
+            context_df,
+        )
+        self.assertEqual(decisions.shape[0], 4)
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
 class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
     def setUp(self):
         self.agent_1_id = generate_entity_id(AGENT_ID_1_BASE + "BoostGeneratorWithOp")
@@ -570,15 +598,15 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
 
     def test_get_generator_boosting_with_pdtimestamp(self):
         context_df = pd.DataFrame(
-            randn(4, 5),
-            columns=["a", "b", "c", "d", "e"],
+            randn(4, 4),
+            columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",
             ),
         )
         decisions = CLIENT.decide_generator_boosting_from_contexts_df(
             self.generator_id,
-            SIMPLE_AGENT_DATA.last_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_DATA.first_valid_index().value // 10 ** 9,
             SIMPLE_AGENT_MANY_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
