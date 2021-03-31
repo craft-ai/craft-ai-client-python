@@ -268,3 +268,45 @@ EMPTY_TREE = {
         "b": {"output_values": [], "prediction": {"confidence": 0, "nb_samples": 0}}
     },
 }
+
+
+SIMPLE_AGENT_DATA = pd.DataFrame(
+    randn(NB_OPERATIONS, 5),
+    columns=["a", "b", "c", "d", "e"],
+    index=pd.date_range("20200101", periods=NB_OPERATIONS, freq="T").tz_localize(
+        "Europe/Paris"
+    ),
+)
+
+
+VALID_GENERATOR_CONFIGURATION = {
+    "context": {
+        "a": {"type": "continuous"},
+        "b": {"type": "continuous"},
+        "c": {"type": "continuous"},
+        "d": {"type": "continuous"},
+        "e": {"type": "continuous"},
+    },
+    "output": ["a"],
+    "time_quantum": 100,
+    "operations_as_events": True,
+    "learning_period": 6000000,
+    "tree_max_operations": 50000,
+    "filter": ["test_filter"],
+}
+VALID_COMPLEX_GENERATOR_CONFIGURATION = {
+    "context": {
+        "a": {"type": "continuous"},
+        "b": {"type": "enum"},
+        "tz": {"type": "timezone"},
+    },
+    "output": ["b"],
+    "time_quantum": 100,
+    "operations_as_events": True,
+    "learning_period": 6000000,
+    "tree_max_operations": 50000,
+    "filter": ["test_filter"],
+}
+
+VALID_TIMESTAMP = 1577833200
+VALID_LAST_TIMESTAMP = 1577847600
