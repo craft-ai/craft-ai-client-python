@@ -59,10 +59,12 @@ class TestPandasSimpleGeneratorWithOpperations(unittest.TestCase):
         self.assertEqual(len(df), 300)
         self.assertEqual(len(df.dtypes), 7)
         self.assertEqual(
-            df.first_valid_index(), pd.Timestamp("2019-12-31 23:00:00+0000", tz="UTC"),
+            df.timestamp.min(),
+            pd.Timestamp("2019-12-31 23:00:00+0000", tz="UTC").value / 1e9,
         )
         self.assertEqual(
-            df.last_valid_index(), pd.Timestamp("2020-01-01 03:59:00+0000", tz="UTC"),
+            df.timestamp.max(),
+            pd.Timestamp("2020-01-01 03:59:00+0000", tz="UTC").value / 1e9,
         )
 
     def test_get_generator_operations_with_pdtimestamp(self):
@@ -115,8 +117,10 @@ class TestPandasComplexGeneratorWithOpperations(unittest.TestCase):
         self.assertEqual(len(df), 20)
         self.assertEqual(len(df.dtypes), 5)
         self.assertEqual(
-            df.first_valid_index(), pd.Timestamp("2019-12-31 23:00:00+0000", tz="UTC"),
+            df.timestamp.min(),
+            pd.Timestamp("2019-12-31 23:00:00+0000", tz="UTC").value / 1e9,
         )
         self.assertEqual(
-            df.last_valid_index(), pd.Timestamp("2020-01-09 23:00:00+0000", tz="UTC"),
+            df.timestamp.max(),
+            pd.Timestamp("2020-01-09 23:00:00+0000", tz="UTC").value / 1e9,
         )

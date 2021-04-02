@@ -280,6 +280,7 @@ class Client(VanillaClient):
             for row in df.itertuples(name=None)
         )
         return pd.DataFrame(predictions_iter, index=df.index)
+
     def get_generator_operations(self, generator_id, start=None, end=None):
         # Convert pandas timestamp to a numerical timestamp in seconds
         if isinstance(start, pd.Timestamp):
@@ -292,10 +293,5 @@ class Client(VanillaClient):
         )
         # convert List to DataFrame with a column for each context property
         df = pd.json_normalize(operations_list)
-
-        # set timestamps as indexes
-        df.index = pd.to_datetime(
-            [operation["timestamp"] for operation in operations_list], unit="s"
-        ).tz_localize("UTC")
 
         return df

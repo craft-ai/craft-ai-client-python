@@ -269,16 +269,6 @@ EMPTY_TREE = {
     },
 }
 
-
-SIMPLE_AGENT_DATA = pd.DataFrame(
-    randn(NB_OPERATIONS, 5),
-    columns=["a", "b", "c", "d", "e"],
-    index=pd.date_range("20200101", periods=NB_OPERATIONS, freq="T").tz_localize(
-        "Europe/Paris"
-    ),
-)
-
-
 VALID_GENERATOR_CONFIGURATION = {
     "context": {
         "a": {"type": "continuous"},
