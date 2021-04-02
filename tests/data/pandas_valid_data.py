@@ -2,9 +2,27 @@ import pandas as pd
 import numpy as np
 from numpy.random import randn
 from craft_ai.pandas import MISSING_VALUE, OPTIONAL_VALUE
+from random import random, randint
 
 NB_OPERATIONS = 300
 NB_MANY_OPERATIONS = 1000
+
+SIMPLE_AGENT_BOOSTING_CONFIGURATION = {
+    "model_type": "boosting",
+    "context": {
+        "a": {"type": "enum"},
+        "b": {"type": "continuous"},
+        "c": {"type": "continuous"},
+        "d": {"type": "continuous"},
+        "e": {"type": "continuous"},
+    },
+    "output": ["a"],
+    "min_samples_per_leaf": 1,
+    "operations_as_events": True,
+    "tree_max_operations": 50000,
+    "num_iterations": 20,
+    "learning_rate": 0.5,
+}
 
 SIMPLE_AGENT_CONFIGURATION = {
     "context": {
@@ -18,6 +36,28 @@ SIMPLE_AGENT_CONFIGURATION = {
     "time_quantum": 100,
     "min_samples_per_leaf": 1,
 }
+
+SIMPLE_AGENT_BOOSTING_DATA = pd.DataFrame(
+    [
+        [str(randint(1, 3)), random(), random(), random(), random()]
+        for i in range(NB_OPERATIONS)
+    ],
+    columns=["a", "b", "c", "d", "e"],
+    index=pd.date_range("20200101", periods=NB_OPERATIONS, freq="T").tz_localize(
+        "Europe/Paris"
+    ),
+)
+
+SIMPLE_AGENT_BOOSTING_MANY_DATA = pd.DataFrame(
+    [
+        [str(randint(1, 3)), random(), random(), random(), random()]
+        for i in range(NB_MANY_OPERATIONS)
+    ],
+    columns=["a", "b", "c", "d", "e"],
+    index=pd.date_range("20200101", periods=NB_MANY_OPERATIONS, freq="T").tz_localize(
+        "Europe/Paris"
+    ),
+)
 
 SIMPLE_AGENT_DATA = pd.DataFrame(
     randn(NB_OPERATIONS, 5),
