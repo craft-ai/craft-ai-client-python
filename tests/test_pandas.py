@@ -545,6 +545,7 @@ class TestPandasGeneratorWithOperation(unittest.TestCase):
         self.assertNotEqual(decision_tree.get("trees"), None)
         self.assertEqual(decision_tree, ground_truth_decision_tree)
 
+
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
 class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def setUp(self):
