@@ -280,3 +280,18 @@ class Client(VanillaClient):
             for row in df.itertuples(name=None)
         )
         return pd.DataFrame(predictions_iter, index=df.index)
+
+    def get_generator_operations(self, generator_id, start=None, end=None):
+        # Convert pandas timestamp to a numerical timestamp in seconds
+        if isinstance(start, pd.Timestamp):
+            start = start.value // 10 ** 9
+        if isinstance(end, pd.Timestamp):
+            end = end.value // 10 ** 9
+
+        operations_list = super(Client, self).get_generator_operations(
+            generator_id, start, end
+        )
+        # convert List to DataFrame with a column for each context property
+        df = pd.json_normalize(operations_list)
+
+        return df
