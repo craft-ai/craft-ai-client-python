@@ -23,6 +23,8 @@ if CRAFTAI_PANDAS_ENABLED:
         pandas_valid_data.SIMPLE_AGENT_BOOSTING_CONFIGURATION
     )
     SIMPLE_AGENT_DATA = pandas_valid_data.SIMPLE_AGENT_DATA
+    SIMPLE_AGENT_BOOSTING_DATA = pandas_valid_data.SIMPLE_AGENT_BOOSTING_DATA
+    SIMPLE_AGENT_BOOSTING_MANY_DATA = pandas_valid_data.SIMPLE_AGENT_BOOSTING_MANY_DATA
     SIMPLE_AGENT_MANY_DATA = pandas_valid_data.SIMPLE_AGENT_MANY_DATA
     COMPLEX_AGENT_CONFIGURATION = pandas_valid_data.COMPLEX_AGENT_CONFIGURATION
     COMPLEX_AGENT_CONFIGURATION_2 = pandas_valid_data.COMPLEX_AGENT_CONFIGURATION_2
@@ -550,7 +552,7 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
         self.agent_id = generate_entity_id(AGENT_ID_1_BASE + "BoostingAgentWData")
         CLIENT.delete_agent(self.agent_id)
         CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_id)
-        CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_DATA)
+        CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_BOOSTING_DATA)
 
     def tearDown(self):
         CLIENT.delete_agent(self.agent_id)
@@ -565,8 +567,8 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
         )
         decisions = CLIENT.decide_boosting_from_contexts_df(
             self.agent_id,
-            SIMPLE_AGENT_DATA.first_valid_index().value // 10 ** 9,
-            SIMPLE_AGENT_DATA.last_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
         self.assertEqual(decisions.shape[0], 4)
@@ -585,8 +587,8 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
         CLIENT.delete_generator(self.generator_id)
         CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_1_id)
         CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_2_id)
-        CLIENT.add_agent_operations(self.agent_1_id, SIMPLE_AGENT_DATA)
-        CLIENT.add_agent_operations(self.agent_2_id, SIMPLE_AGENT_MANY_DATA)
+        CLIENT.add_agent_operations(self.agent_1_id, SIMPLE_AGENT_BOOSTING_DATA)
+        CLIENT.add_agent_operations(self.agent_2_id, SIMPLE_AGENT_BOOSTING_MANY_DATA)
         generator_configuration = copy.deepcopy(SIMPLE_AGENT_BOOSTING_CONFIGURATION)
         generator_configuration["filter"] = [self.agent_1_id, self.agent_2_id]
         CLIENT.create_generator(generator_configuration, self.generator_id)
@@ -606,8 +608,8 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
         )
         decisions = CLIENT.decide_generator_boosting_from_contexts_df(
             self.generator_id,
-            SIMPLE_AGENT_DATA.first_valid_index().value // 10 ** 9,
-            SIMPLE_AGENT_MANY_DATA.last_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_MANY_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
         self.assertEqual(decisions.shape[0], 4)
