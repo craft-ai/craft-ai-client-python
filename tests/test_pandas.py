@@ -1,5 +1,6 @@
 import unittest
 
+from random import random
 from craft_ai.pandas import CRAFTAI_PANDAS_ENABLED
 
 if CRAFTAI_PANDAS_ENABLED:
@@ -550,6 +551,7 @@ class TestPandasGeneratorWithOperation(unittest.TestCase):
 class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def setUp(self):
         self.agent_id = generate_entity_id(AGENT_ID_1_BASE + "BoostingAgentWData")
+
         CLIENT.delete_agent(self.agent_id)
         CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_id)
         CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_BOOSTING_DATA)
@@ -557,15 +559,15 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def tearDown(self):
         CLIENT.delete_agent(self.agent_id)
 
-    def test_decide_boosting_from_contexts_df(self):
+    def test_decide_agent_boosting_from_contexts_df(self):
         context_df = pd.DataFrame(
-            randn(4, 4),
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
             columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",
             ),
         )
-        decisions = CLIENT.decide_boosting_from_contexts_df(
+        decisions = CLIENT.decide_agent_boosting_from_contexts_df(
             self.agent_id,
             SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
             SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
@@ -600,7 +602,7 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
 
     def test_get_generator_boosting_with_pdtimestamp(self):
         context_df = pd.DataFrame(
-            randn(4, 4),
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
             columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",

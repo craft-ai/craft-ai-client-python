@@ -2,6 +2,7 @@ import json
 import pandas as pd
 
 from .. import Client as VanillaClient
+from .. import Time
 from ..constants import DEFAULT_DECISION_TREE_VERSION
 from ..errors import CraftAiBadRequestError, CraftAiNullDecisionError
 from .interpreter import Interpreter
@@ -199,41 +200,6 @@ class Client(VanillaClient):
 
         return super(Client, self).get_agent_decision_tree(agent_id, timestamp, version)
 
-    def pandas_agent_boosting_decide_from_row(
-        self, generator_id, from_ts, to_ts, params
-    ):
-        context = {
-            feature_name: format_input(value)
-            for feature_name, value in zip(
-                params["feature_names"], params["context_ops"][1:]
-            )
-            if is_valid_property_value(feature_name, value)
-        }
-        try:
-            decision = super(Client, self).get_agent_boosting_decision(
-                generator_id, from_ts, to_ts, context
-            )
-            return {"output_predicted_value": decision["output"]["predicted_value"]}
-
-        except CraftAiNullDecisionError as e:
-            return {"error": e.message}
-
-    def decide_boosting_from_contexts_df(
-        self, generator_id, from_ts, to_ts, contexts_df
-    ):
-        Client.check_decision_context_df(contexts_df)
-        df = contexts_df.copy(deep=True)
-        predictions_iter = (
-            self.pandas_agent_boosting_decide_from_row(
-                generator_id,
-                from_ts,
-                to_ts,
-                {"context_ops": row, "feature_names": df.columns.values},
-            )
-            for row in df.itertuples(name=None)
-        )
-        return pd.DataFrame(predictions_iter, index=df.index)
-
     def get_generator_decision_tree(
         self, generator_id, timestamp=None, version=DEFAULT_DECISION_TREE_VERSION
     ):
@@ -244,42 +210,6 @@ class Client(VanillaClient):
         return super(Client, self).get_generator_decision_tree(
             generator_id, timestamp, version
         )
-
-    def pandas_generator_boosting_decide_from_row(
-        self, generator_id, from_ts, to_ts, params
-    ):
-        context = {
-            feature_name: format_input(value)
-            for feature_name, value in zip(
-                params["feature_names"], params["context_ops"][1:]
-            )
-            if is_valid_property_value(feature_name, value)
-        }
-        try:
-            decision = super(Client, self).get_generator_boosting_decision(
-                generator_id, from_ts, to_ts, context
-            )
-            return {"output_predicted_value": decision["output"]["predicted_value"]}
-
-        except CraftAiNullDecisionError as e:
-            return {"error": e.message}
-
-    def decide_generator_boosting_from_contexts_df(
-        self, generator_id, from_ts, to_ts, contexts_df
-    ):
-        Client.check_decision_context_df(contexts_df)
-        df = contexts_df.copy(deep=True)
-
-        predictions_iter = (
-            self.pandas_generator_boosting_decide_from_row(
-                generator_id,
-                from_ts,
-                to_ts,
-                {"context_ops": row, "feature_names": df.columns.values},
-            )
-            for row in df.itertuples(name=None)
-        )
-        return pd.DataFrame(predictions_iter, index=df.index)
 
     def get_generator_operations(self, generator_id, start=None, end=None):
         # Convert pandas timestamp to a numerical timestamp in seconds
@@ -295,3 +225,153 @@ class Client(VanillaClient):
         df = pd.json_normalize(operations_list)
 
         return df
+
+    def _generate_decision_df_and_tz_col(
+        self, entity_id, contexts_df, generator_decision=False
+    ):
+        if not generator_decision:
+            agent = super(Client, self).get_agent(entity_id)
+            configuration = agent["configuration"]
+        else:
+            generator = super(Client, self).get_generator(entity_id)
+            configuration = generator["configuration"]
+
+        df = contexts_df.copy(deep=True)
+
+        tz_col = [
+            key
+            for key, value in configuration["context"].items()
+            if value["type"] == "timezone"
+        ]
+
+        if tz_col:
+            tz_col = tz_col[0]
+            df[tz_col] = create_timezone_df(contexts_df, tz_col).iloc[:, 0]
+
+        return tz_col, df
+
+    def pandas_agent_boosting_decide_from_row(self, agent_id, from_ts, to_ts, params):
+        context = {
+            feature_name: format_input(value)
+            for feature_name, value in zip(
+                params["feature_names"], params["context_ops"][1:]
+            )
+            if is_valid_property_value(feature_name, value)
+        }
+
+        time = Time(
+            t=params["context_ops"][0].value
+            // 1000000000,  # Timestamp.value returns nanoseconds
+            timezone=context[params["tz_col"]]
+            if params["tz_col"]
+            else params["context_ops"][0].tz,
+        )
+
+        configuration = params["configuration"]
+        if configuration != {}:
+            context_result = Interpreter._rebuild_context(configuration, context, time)
+            context = context_result["context"]
+        else:
+            context = Interpreter.join_decide_args((context, time))
+        # Convert timezones as integers into standard +/hh:mm format
+        # This should only happen when no time generated value is required
+        decide_context = Interpreter._convert_timezones_to_standard_format(
+            configuration, context.copy()
+        )
+
+        try:
+            decision = super(Client, self).get_agent_boosting_decision(
+                agent_id, from_ts, to_ts, decide_context
+            )
+            return {"output_predicted_value": decision["output"]["predicted_value"]}
+
+        except CraftAiNullDecisionError as e:
+            return {"error": e.message}
+
+    def decide_agent_boosting_from_contexts_df(
+        self, agent_id, from_ts, to_ts, contexts_df
+    ):
+        Client.check_decision_context_df(contexts_df)
+        tz_col, df = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
+
+        configuration = self.get_agent(agent_id)["configuration"]
+        predictions_iter = (
+            self.pandas_agent_boosting_decide_from_row(
+                agent_id,
+                from_ts,
+                to_ts,
+                {
+                    "context_ops": row,
+                    "configuration": configuration,
+                    "feature_names": df.columns.values,
+                    "tz_col": tz_col,
+                },
+            )
+            for row in df.itertuples(name=None)
+        )
+        return pd.DataFrame(predictions_iter, index=df.index)
+
+    def pandas_generator_boosting_decide_from_row(
+        self, generator_id, from_ts, to_ts, params
+    ):
+        context = {
+            feature_name: format_input(value)
+            for feature_name, value in zip(
+                params["feature_names"], params["context_ops"][1:]
+            )
+            if is_valid_property_value(feature_name, value)
+        }
+
+        time = Time(
+            t=params["context_ops"][0].value
+            // 1000000000,  # Timestamp.value returns nanoseconds
+            timezone=context[params["tz_col"]]
+            if params["tz_col"]
+            else params["context_ops"][0].tz,
+        )
+
+        configuration = params["configuration"]
+        if configuration != {}:
+            context_result = Interpreter._rebuild_context(configuration, context, time)
+            context = context_result["context"]
+        else:
+            context = Interpreter.join_decide_args((context, time))
+        # Convert timezones as integers into standard +/hh:mm format
+        # This should only happen when no time generated value is required
+        decide_context = Interpreter._convert_timezones_to_standard_format(
+            configuration, context.copy()
+        )
+
+        try:
+            decision = super(Client, self).get_generator_boosting_decision(
+                generator_id, from_ts, to_ts, decide_context
+            )
+            return {"output_predicted_value": decision["output"]["predicted_value"]}
+
+        except CraftAiNullDecisionError as e:
+            return {"error": e.message}
+
+    def decide_generator_boosting_from_contexts_df(
+        self, generator_id, from_ts, to_ts, contexts_df
+    ):
+        Client.check_decision_context_df(contexts_df)
+        tz_col, df = self._generate_decision_df_and_tz_col(
+            generator_id, contexts_df, generator_decision=True
+        )
+
+        configuration = self.get_generator(generator_id)["configuration"]
+        predictions_iter = (
+            self.pandas_generator_boosting_decide_from_row(
+                generator_id,
+                from_ts,
+                to_ts,
+                {
+                    "context_ops": row,
+                    "configuration": configuration,
+                    "feature_names": df.columns.values,
+                    "tz_col": tz_col,
+                },
+            )
+            for row in df.itertuples(name=None)
+        )
+        return pd.DataFrame(predictions_iter, index=df.index)
