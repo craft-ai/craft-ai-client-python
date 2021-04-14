@@ -248,17 +248,9 @@ class Client(VanillaClient):
             tz_col = tz_col[0]
             df[tz_col] = create_timezone_df(contexts_df, tz_col).iloc[:, 0]
 
-        return tz_col, df
+        return df, tz_col
 
-    def pandas_agent_boosting_decide_from_row(self, agent_id, from_ts, to_ts, params):
-        context = {
-            feature_name: format_input(value)
-            for feature_name, value in zip(
-                params["feature_names"], params["context_ops"][1:]
-            )
-            if is_valid_property_value(feature_name, value)
-        }
-
+    def _generate_time_features(self, params, context):
         time = Time(
             t=params["context_ops"][0].value
             // 1000000000,  # Timestamp.value returns nanoseconds
@@ -267,6 +259,10 @@ class Client(VanillaClient):
             else params["context_ops"][0].tz,
         )
 
+        return time
+
+    def _generate_decision_context(self, params, context, time):
+        print("TIME IS INSTANCE TIME", isinstance(time, Time))
         configuration = params["configuration"]
         if configuration != {}:
             context_result = Interpreter._rebuild_context(configuration, context, time)
@@ -278,6 +274,23 @@ class Client(VanillaClient):
         decide_context = Interpreter._convert_timezones_to_standard_format(
             configuration, context.copy()
         )
+
+        return decide_context
+
+    def _check_context_properties(self, params):
+        context = {
+            feature_name: format_input(value)
+            for feature_name, value in zip(
+                params["feature_names"], params["context_ops"][1:]
+            )
+            if is_valid_property_value(feature_name, value)
+        }
+        return context
+
+    def pandas_agent_boosting_decide_from_row(self, agent_id, from_ts, to_ts, params):
+        context = self._check_context_properties(params)
+        time = self._generate_time_features(params, context)
+        decide_context = self._generate_decision_context(params, context, time)
 
         try:
             decision = super(Client, self).get_agent_boosting_decision(
@@ -292,7 +305,7 @@ class Client(VanillaClient):
         self, agent_id, from_ts, to_ts, contexts_df
     ):
         Client.check_decision_context_df(contexts_df)
-        tz_col, df = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
+        df, tz_col = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
 
         configuration = self.get_agent(agent_id)["configuration"]
         predictions_iter = (
@@ -314,33 +327,9 @@ class Client(VanillaClient):
     def pandas_generator_boosting_decide_from_row(
         self, generator_id, from_ts, to_ts, params
     ):
-        context = {
-            feature_name: format_input(value)
-            for feature_name, value in zip(
-                params["feature_names"], params["context_ops"][1:]
-            )
-            if is_valid_property_value(feature_name, value)
-        }
-
-        time = Time(
-            t=params["context_ops"][0].value
-            // 1000000000,  # Timestamp.value returns nanoseconds
-            timezone=context[params["tz_col"]]
-            if params["tz_col"]
-            else params["context_ops"][0].tz,
-        )
-
-        configuration = params["configuration"]
-        if configuration != {}:
-            context_result = Interpreter._rebuild_context(configuration, context, time)
-            context = context_result["context"]
-        else:
-            context = Interpreter.join_decide_args((context, time))
-        # Convert timezones as integers into standard +/hh:mm format
-        # This should only happen when no time generated value is required
-        decide_context = Interpreter._convert_timezones_to_standard_format(
-            configuration, context.copy()
-        )
+        context = self._check_context_properties(params)
+        time = self._generate_time_features(params, context)
+        decide_context = self._generate_decision_context(params, context, time)
 
         try:
             decision = super(Client, self).get_generator_boosting_decision(
@@ -355,7 +344,7 @@ class Client(VanillaClient):
         self, generator_id, from_ts, to_ts, contexts_df
     ):
         Client.check_decision_context_df(contexts_df)
-        tz_col, df = self._generate_decision_df_and_tz_col(
+        df, tz_col = self._generate_decision_df_and_tz_col(
             generator_id, contexts_df, generator_decision=True
         )
 
