@@ -1,5 +1,6 @@
 import unittest
 
+from random import random
 from craft_ai.pandas import CRAFTAI_PANDAS_ENABLED
 
 if CRAFTAI_PANDAS_ENABLED:
@@ -550,6 +551,7 @@ class TestPandasGeneratorWithOperation(unittest.TestCase):
 class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def setUp(self):
         self.agent_id = generate_entity_id(AGENT_ID_1_BASE + "BoostingAgentWData")
+
         CLIENT.delete_agent(self.agent_id)
         CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_id)
         CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_BOOSTING_DATA)
@@ -557,15 +559,15 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def tearDown(self):
         CLIENT.delete_agent(self.agent_id)
 
-    def test_decide_boosting_from_contexts_df(self):
+    def test_decide_agent_boosting_from_contexts_df(self):
         context_df = pd.DataFrame(
-            randn(4, 4),
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
             columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",
             ),
         )
-        decisions = CLIENT.decide_boosting_from_contexts_df(
+        decisions = CLIENT.decide_agent_boosting_from_contexts_df(
             self.agent_id,
             SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
             SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
@@ -600,7 +602,7 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
 
     def test_get_generator_boosting_with_pdtimestamp(self):
         context_df = pd.DataFrame(
-            randn(4, 4),
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
             columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",
@@ -613,3 +615,57 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
             context_df,
         )
         self.assertEqual(decisions.shape[0], 4)
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestPandasDecisionContextGeneration(unittest.TestCase):
+    def setUp(self):
+        self.agent_1_id = generate_entity_id(AGENT_ID_1_BASE + "BoostGeneratorWithOp")
+        self.generator_id = generate_entity_id(
+            GENERATOR_ID_BASE + "BoostGeneratorWithOp"
+        )
+        CLIENT.delete_agent(self.agent_1_id)
+        CLIENT.delete_generator(self.generator_id)
+
+        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_1_id)
+        CLIENT.add_agent_operations(self.agent_1_id, SIMPLE_AGENT_BOOSTING_DATA)
+
+        generator_configuration = copy.deepcopy(SIMPLE_AGENT_BOOSTING_CONFIGURATION)
+        generator_configuration["filter"] = [self.agent_1_id]
+        CLIENT.create_generator(generator_configuration, self.generator_id)
+
+    def tearDown(self):
+        CLIENT.delete_agent(self.agent_1_id)
+        CLIENT.delete_generator(self.generator_id)
+
+    def test_time_features_generation(self):
+        # Ensures that toùe features are correctly generated.
+        contexts_df = pd.DataFrame(
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
+            columns=["b", "c", "d", "e"],
+            index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
+                "Europe/Paris",
+            ),
+        )
+
+        df, tz_col = CLIENT._generate_decision_df_and_tz_col(
+            self.generator_id, contexts_df, generator_decision=True
+        )
+        configuration = SIMPLE_AGENT_BOOSTING_CONFIGURATION
+        params = {
+            "context_ops": list(df.itertuples(name=None))[0],
+            "configuration": configuration,
+            "feature_names": df.columns.values,
+            "tz_col": tz_col,
+        }
+        context = CLIENT._check_context_properties(params)
+        time = CLIENT._generate_time_features(params, context)
+
+        time_dict = time.to_dict()
+        self.assertEqual(time_dict["timestamp"], 1577833200)
+        self.assertEqual(time_dict["timezone"], "+01:00")
+        self.assertEqual(time_dict["time_of_day"], 0.0)
+        self.assertEqual(time_dict["day_of_week"], 2)
+        self.assertEqual(time_dict["day_of_month"], 1)
+        self.assertEqual(time_dict["month_of_year"], 1)
+        self.assertEqual(time_dict["utc_iso"], "2020-01-01T00:00:00+01:00")

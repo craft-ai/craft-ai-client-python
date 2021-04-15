@@ -14,7 +14,7 @@ SIMPLE_AGENT_BOOSTING_CONFIGURATION = {
         "b": {"type": "continuous"},
         "c": {"type": "continuous"},
         "d": {"type": "continuous"},
-        "e": {"type": "continuous"},
+        "e": {"type": "timezone"},
     },
     "output": ["a"],
     "min_samples_per_leaf": 1,
@@ -39,7 +39,7 @@ SIMPLE_AGENT_CONFIGURATION = {
 
 SIMPLE_AGENT_BOOSTING_DATA = pd.DataFrame(
     [
-        [str(randint(1, 3)), random(), random(), random(), random()]
+        [str(randint(1, 3)), random(), random(), random(), "+01:00"]
         for i in range(NB_OPERATIONS)
     ],
     columns=["a", "b", "c", "d", "e"],
@@ -50,7 +50,7 @@ SIMPLE_AGENT_BOOSTING_DATA = pd.DataFrame(
 
 SIMPLE_AGENT_BOOSTING_MANY_DATA = pd.DataFrame(
     [
-        [str(randint(1, 3)), random(), random(), random(), random()]
+        [str(randint(1, 3)), random(), random(), random(), "+01:00"]
         for i in range(NB_MANY_OPERATIONS)
     ],
     columns=["a", "b", "c", "d", "e"],
