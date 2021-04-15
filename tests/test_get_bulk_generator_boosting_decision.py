@@ -4,7 +4,7 @@ from craft_ai import Client, errors as craft_err
 
 from . import settings
 from .utils import generate_entity_id
-from .data import valid_data, invalid_data
+from .data import valid_data
 
 
 class TestGetGeneratorBulkBoostingDecisionSuccess(unittest.TestCase):
@@ -15,8 +15,12 @@ class TestGetGeneratorBulkBoostingDecisionSuccess(unittest.TestCase):
     def setUpClass(cls):
         cls.client = Client(settings.CRAFT_CFG)
         cls.agent_id = generate_entity_id("test_get_generator_bulk_boosting_decision")
-        cls.generator_id_1 = generate_entity_id("test_get_generator_bulk_boosting_decision")
-        cls.generator_id_2 = generate_entity_id("test_get_generator_bulk_boosting_decision")
+        cls.generator_id_1 = generate_entity_id(
+            "test_get_generator_bulk_boosting_decision"
+        )
+        cls.generator_id_2 = generate_entity_id(
+            "test_get_generator_bulk_boosting_decision"
+        )
 
     def setUp(self):
         self.client.delete_agent(self.agent_id)
@@ -40,15 +44,18 @@ class TestGetGeneratorBulkBoostingDecisionSuccess(unittest.TestCase):
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
-        payload = [{
-            "entityName": self.generator_id_1,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": self.generator_id_2,
-            "timeWindow": timeWindow,
-            "context": context
-        }]
+        payload = [
+            {
+                "entityName": self.generator_id_1,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {
+                "entityName": self.generator_id_2,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+        ]
         decisions = self.client.get_generator_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.generator_id_1)
@@ -73,8 +80,12 @@ class TestGetGeneratorBoostingDecisionFailure(unittest.TestCase):
     def setUpClass(cls):
         cls.client = Client(settings.CRAFT_CFG)
         cls.agent_id = generate_entity_id("test_get_generator_bulk_boosting_decision")
-        cls.generator_id_1 = generate_entity_id("test_get_generator_bulk_boosting_decision")
-        cls.generator_id_2 = generate_entity_id("test_get_generator_bulk_boosting_decision")
+        cls.generator_id_1 = generate_entity_id(
+            "test_get_generator_bulk_boosting_decision"
+        )
+        cls.generator_id_2 = generate_entity_id(
+            "test_get_generator_bulk_boosting_decision"
+        )
 
     def setUp(self):
         self.client.delete_agent(self.agent_id)
@@ -100,19 +111,19 @@ class TestGetGeneratorBoostingDecisionFailure(unittest.TestCase):
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
-        payload = [{
-            "entityName": self.generator_id_1,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": self.generator_id_2,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": "test_test",
-            "timeWindow": timeWindow,
-            "context": context
-        }]
+        payload = [
+            {
+                "entityName": self.generator_id_1,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {
+                "entityName": self.generator_id_2,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {"entityName": "test_test", "timeWindow": timeWindow, "context": context},
+        ]
         decisions = self.client.get_generator_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.generator_id_1)
@@ -134,5 +145,5 @@ class TestGetGeneratorBoostingDecisionFailure(unittest.TestCase):
         self.assertRaises(
             craft_err.CraftAiBadRequestError,
             self.client.get_agent_bulk_boosting_decision,
-            []
+            [],
         )

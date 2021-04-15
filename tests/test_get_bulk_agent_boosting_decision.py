@@ -4,7 +4,7 @@ from craft_ai import Client, errors as craft_err
 
 from . import settings
 from .utils import generate_entity_id
-from .data import valid_data, invalid_data
+from .data import valid_data
 
 
 class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
@@ -19,12 +19,16 @@ class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
 
     def setUp(self):
         self.client.delete_agent(self.agent_id_1)
-        self.client.create_agent(valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_1)
+        self.client.create_agent(
+            valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_1
+        )
         self.client.add_agent_operations(
             self.agent_id_1, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
         self.client.delete_agent(self.agent_id_2)
-        self.client.create_agent(valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_2)
+        self.client.create_agent(
+            valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_2
+        )
         self.client.add_agent_operations(
             self.agent_id_2, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
@@ -38,15 +42,18 @@ class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
-        payload = [{
-            "entityName": self.agent_id_1,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": self.agent_id_2,
-            "timeWindow": timeWindow,
-            "context": context
-        }]
+        payload = [
+            {
+                "entityName": self.agent_id_1,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {
+                "entityName": self.agent_id_2,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+        ]
         decisions = self.client.get_agent_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.agent_id_1)
@@ -74,12 +81,16 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
 
     def setUp(self):
         self.client.delete_agent(self.agent_id_1)
-        self.client.create_agent(valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_1)
+        self.client.create_agent(
+            valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_1
+        )
         self.client.add_agent_operations(
             self.agent_id_1, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
         self.client.delete_agent(self.agent_id_2)
-        self.client.create_agent(valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_2)
+        self.client.create_agent(
+            valid_data.VALID_BOOSTING_CONFIGURATION, self.agent_id_2
+        )
         self.client.add_agent_operations(
             self.agent_id_2, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
@@ -95,19 +106,19 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
-        payload = [{
-            "entityName": self.agent_id_1,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": self.agent_id_2,
-            "timeWindow": timeWindow,
-            "context": context
-        },{
-            "entityName": "test_test",
-            "timeWindow": timeWindow,
-            "context": context
-        }]
+        payload = [
+            {
+                "entityName": self.agent_id_1,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {
+                "entityName": self.agent_id_2,
+                "timeWindow": timeWindow,
+                "context": context,
+            },
+            {"entityName": "test_test", "timeWindow": timeWindow, "context": context},
+        ]
         decisions = self.client.get_agent_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.agent_id_1)
@@ -128,5 +139,5 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
         self.assertRaises(
             craft_err.CraftAiBadRequestError,
             self.client.get_agent_bulk_boosting_decision,
-            []
+            [],
         )

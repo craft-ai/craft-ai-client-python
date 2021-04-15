@@ -1218,9 +1218,7 @@ class Client(object):
 
         # Create the json file with the agents with valid id and send it
         decisions = self._create_and_send_json_bulk(
-            payload,
-            "{}/bulk/boosting/decision".format(self._base_url),
-            "POST",
+            payload, "{}/bulk/boosting/decision".format(self._base_url), "POST",
         )
 
         return decisions
@@ -1228,8 +1226,8 @@ class Client(object):
     def get_generator_bulk_boosting_decision(self, payload):
         """Get a group of boosting decisions.
 
-        :param list payload: Contains the informations to get the decisions.
-        It's in the form [{"entityName": generator_id, "timeWindow": [from, to], "context": context}]
+        :param list payload: Contains the informations to get the decisions. It's in the form
+        [{"entityName": generator_id, "timeWindow": [from, to], "context": context}]
         With timeWindow and context having the form given in the craft_ai documentation.
 
         :return: list of decisions.
