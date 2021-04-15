@@ -1203,6 +1203,50 @@ class Client(object):
 
         return decision
 
+    def get_agent_bulk_boosting_decision(self, payload):
+        """Get a group of boosting decisions.
+
+        :param list payload: Contains the informations to get the decisions.
+        It's in the form [{"entityName": agent_id, "timeWindow": [from, to], "context": context}]
+        With timeWindow and context having the form given in the craft_ai documentation.
+
+        :return: list of decisions.
+        :rtype: List of dict.
+
+        :raises CraftAiBadRequestError: If the payload is invalid.
+        """
+
+        # Create the json file with the agents with valid id and send it
+        decisions = self._create_and_send_json_bulk(
+            payload,
+            "{}/bulk/boosting/decision".format(self._base_url),
+            "POST",
+        )
+
+        return decisions
+
+    def get_generator_bulk_boosting_decision(self, payload):
+        """Get a group of boosting decisions.
+
+        :param list payload: Contains the informations to get the decisions.
+        It's in the form [{"entityName": generator_id, "timeWindow": [from, to], "context": context}]
+        With timeWindow and context having the form given in the craft_ai documentation.
+
+        :return: list of decisions.
+        :rtype: List of dict.
+
+        :raises CraftAiBadRequestError: If the payload is invalid.
+        """
+
+        # Create the json file with the agents with valid id and send it
+        decisions = self._create_and_send_json_bulk(
+            payload,
+            "{}/bulk/generators/boosting/decision".format(self._base_url),
+            "POST",
+        )
+
+        return decisions
+
     @staticmethod
     def _parse_body(response):
         try:
