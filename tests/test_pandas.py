@@ -559,7 +559,7 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
     def tearDown(self):
         CLIENT.delete_agent(self.agent_id)
 
-    def test_decide_agent_boosting_from_contexts_df(self):
+    def test_decide_boosting_from_contexts_df(self):
         context_df = pd.DataFrame(
             [[random(), random(), random(), "+01:00"] for i in range(4)],
             columns=["b", "c", "d", "e"],
@@ -567,7 +567,7 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
                 "Europe/Paris",
             ),
         )
-        decisions = CLIENT.decide_agent_boosting_from_contexts_df(
+        decisions = CLIENT.decide_boosting_from_contexts_df(
             self.agent_id,
             SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
             SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
