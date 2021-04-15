@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "craft-ai"
-version = "2.2.0"
+version = "2.2.1"
 description = "craft ai API python 3 client"
 authors = ["craft ai <contact@craft.ai>"]
 license = "BSD-3-Clause"
