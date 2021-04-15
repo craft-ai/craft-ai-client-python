@@ -33,14 +33,15 @@ class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
             self.agent_id_2, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
 
-    def clean_up_agent(self, aid):
-        # Makes sure that no agent with the standard ID remains
-        self.client.delete_agent(aid)
+    def tearDown(self):
+        self.client.delete_agent(self.agent_id_1)
+        self.client.delete_agent(self.agent_id_2)
 
     def test_get_bulk_decision_boosting_with_correct_input(self):
         first_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[0]["timestamp"]
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
+
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
         payload = [
             {
@@ -54,6 +55,7 @@ class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
                 "context": context,
             },
         ]
+
         decisions = self.client.get_agent_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.agent_id_1)
@@ -65,8 +67,6 @@ class TestGetAgentBulkBoostingDecisionSuccess(unittest.TestCase):
         self.assertEqual(decisions[1]["context"], context)
         self.assertEqual(decisions[1]["timeWindow"], timeWindow)
         self.assertEqual(decisions[1]["output"]["predicted_value"], "pink")
-        self.addCleanup(self.clean_up_agent, self.agent_id_1)
-        self.addCleanup(self.clean_up_agent, self.agent_id_2)
 
 
 class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
@@ -95,9 +95,9 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
             self.agent_id_2, valid_data.VALID_OPERATIONS_SET_COMPLETE_1
         )
 
-    def clean_up_agent(self, aid):
-        # Makes sure that no agent with the standard ID remains
-        self.client.delete_agent(aid)
+    def tearDown(self):
+        self.client.delete_agent(self.agent_id_1)
+        self.client.delete_agent(self.agent_id_2)
 
     def test_get_bulk_decision_boosting_with_non_existant_agent_id(self):
         """get_agent_bulk_boosting_decision should handle valid and non existant
@@ -105,6 +105,7 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
         first_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[0]["timestamp"]
         last_timestamp = valid_data.VALID_OPERATIONS_SET_COMPLETE_1[-1]["timestamp"]
         timeWindow = [first_timestamp, last_timestamp]
+
         context = {"tz": "+02:00", "presence": "occupant", "lightIntensity": 1}
         payload = [
             {
@@ -119,6 +120,7 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
             },
             {"entityName": "test_test", "timeWindow": timeWindow, "context": context},
         ]
+
         decisions = self.client.get_agent_bulk_boosting_decision(payload)
         self.assertEqual(decisions[0]["_version"], "1.0.0")
         self.assertEqual(decisions[0]["entityName"], self.agent_id_1)
@@ -131,8 +133,6 @@ class TestGetAgentBoostingDecisionFailure(unittest.TestCase):
         self.assertEqual(decisions[1]["timeWindow"], timeWindow)
         self.assertEqual(decisions[1]["output"]["predicted_value"], "pink")
         self.assertIsInstance(decisions[2]["error"], craft_err.CraftAiNotFoundError)
-        self.addCleanup(self.clean_up_agent, self.agent_id_1)
-        self.addCleanup(self.clean_up_agent, self.agent_id_2)
 
     def test_get_bulk_decision_boosting_with_empty_array(self):
         """get_agent_bulk_boosting_decision fail properly when emty array given"""

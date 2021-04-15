@@ -1211,7 +1211,7 @@ class Client(object):
         With timeWindow and context having the form given in the craft_ai documentation.
 
         :return: list of decisions.
-        :rtype: List of dict.
+        :rtype: list of dict.
 
         :raises CraftAiBadRequestError: If the payload is invalid.
         """
@@ -1231,7 +1231,7 @@ class Client(object):
         With timeWindow and context having the form given in the craft_ai documentation.
 
         :return: list of decisions.
-        :rtype: List of dict.
+        :rtype: list of dict.
 
         :raises CraftAiBadRequestError: If the payload is invalid.
         """
