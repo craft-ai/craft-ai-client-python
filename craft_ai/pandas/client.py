@@ -301,9 +301,7 @@ class Client(VanillaClient):
         except CraftAiNullDecisionError as e:
             return {"error": e.message}
 
-    def decide_agent_boosting_from_contexts_df(
-        self, agent_id, from_ts, to_ts, contexts_df
-    ):
+    def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
         Client.check_decision_context_df(contexts_df)
         df, tz_col = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
 
