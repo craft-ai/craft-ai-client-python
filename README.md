@@ -6,10 +6,6 @@
 
 ## Get Started!
 
-### 0 - Signup
-
-If you're reading this you are probably already registered with **craft ai**, if not, head to [`https://beta.craft.ai/signup`](https://beta.craft.ai/signup).
-
 ### 1 - Create a project
 
 Once your account is setup, let's create your first **project**! Go in the 'Projects' tab in the **craft ai** control center at [`https://beta.craft.ai/inspector`](https://beta.craft.ai/inspector), and press **Create a project**.
@@ -2052,7 +2048,7 @@ client.add_agents_operations_bulk(addition_operations_bulk_payload)
 ```
 Given an object that is not a `DataFrame` this method behave like the _vanilla_ `craft_ai.Client.add_agents_operations_bulk`.
 
-#### `craft_ai.pandas.client.decide_agent_boosting_from_contexts_df` #####
+#### `craft_ai.pandas.client.decide_boosting_from_contexts_df` #####
 Make multiple boosting decisions on a given `DataFrame` on an agent.
 
 ```python
@@ -2072,7 +2068,7 @@ context_df = pd.DataFrame(
   index=pd.date_range('20130101', periods=5, freq='D').tz_localize("UTC")
 )
 
-decisions_df = CLIENT.decide_agent_boosting_from_contexts_df(
+decisions_df = CLIENT.decide_boosting_from_contexts_df(
     agent_id_1,
     FROM_TIMESTAMP,
     TO_TIMESTAMP,
