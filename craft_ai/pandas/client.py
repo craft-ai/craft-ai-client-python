@@ -262,7 +262,6 @@ class Client(VanillaClient):
         return time
 
     def _generate_decision_context(self, params, context, time):
-        print("TIME IS INSTANCE TIME", isinstance(time, Time))
         configuration = params["configuration"]
         if configuration != {}:
             context_result = Interpreter._rebuild_context(configuration, context, time)
