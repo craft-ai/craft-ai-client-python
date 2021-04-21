@@ -23,6 +23,9 @@ if CRAFTAI_PANDAS_ENABLED:
     SIMPLE_AGENT_BOOSTING_CONFIGURATION = (
         pandas_valid_data.SIMPLE_AGENT_BOOSTING_CONFIGURATION
     )
+    SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE = (
+        pandas_valid_data.SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE
+    )
     SIMPLE_AGENT_DATA = pandas_valid_data.SIMPLE_AGENT_DATA
     SIMPLE_AGENT_BOOSTING_DATA = pandas_valid_data.SIMPLE_AGENT_BOOSTING_DATA
     SIMPLE_AGENT_BOOSTING_MANY_DATA = pandas_valid_data.SIMPLE_AGENT_BOOSTING_MANY_DATA
@@ -573,7 +576,12 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
             SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
-        self.assertEqual(decisions.shape[0], 4)
+        self.assertTrue(len(decisions.columns) == 1)
+        self.assertTrue("a_predicted_value" in decisions.columns)
+        self.assertTrue(
+            type(decisions.iloc[0]["a_predicted_value"]) == float
+            or type(decisions.iloc[0]["a_predicted_value"] == int)
+        )
 
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
@@ -614,7 +622,68 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
             SIMPLE_AGENT_BOOSTING_MANY_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
-        self.assertEqual(decisions.shape[0], 4)
+        self.assertTrue(len(decisions.columns) == 1)
+        self.assertTrue("a_predicted_value" in decisions.columns)
+        self.assertTrue(
+            type(decisions.iloc[0]["a_predicted_value"]) == float
+            or type(decisions.iloc[0]["a_predicted_value"] == int)
+        )
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestPandasBoostingGeneratorWithGeneratedType(unittest.TestCase):
+    def setUp(self):
+        self.agent_1_id = generate_entity_id(
+            AGENT_ID_1_BASE + "BoostGeneratorWithGenType"
+        )
+        self.agent_2_id = generate_entity_id(
+            AGENT_ID_2_BASE + "BoostGeneratorWithGenType"
+        )
+        self.generator_id = generate_entity_id(
+            GENERATOR_ID_BASE + "BoostGeneratorWithGenType"
+        )
+        CLIENT.delete_agent(self.agent_1_id)
+        CLIENT.delete_agent(self.agent_2_id)
+        CLIENT.delete_generator(self.generator_id)
+        CLIENT.create_agent(
+            SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE, self.agent_1_id
+        )
+        CLIENT.create_agent(
+            SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE, self.agent_2_id
+        )
+        CLIENT.add_agent_operations(self.agent_1_id, SIMPLE_AGENT_BOOSTING_DATA)
+        CLIENT.add_agent_operations(self.agent_2_id, SIMPLE_AGENT_BOOSTING_MANY_DATA)
+        generator_configuration = copy.deepcopy(
+            SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE
+        )
+        generator_configuration["filter"] = [self.agent_1_id, self.agent_2_id]
+        CLIENT.create_generator(generator_configuration, self.generator_id)
+
+    def tearDown(self):
+        CLIENT.delete_agent(self.agent_1_id)
+        CLIENT.delete_agent(self.agent_2_id)
+        CLIENT.delete_generator(self.generator_id)
+
+    def test_get_generator_boosting_with_pdtimestamp(self):
+        context_df = pd.DataFrame(
+            [[random(), random(), random(), "+01:00"] for i in range(4)],
+            columns=["b", "c", "d", "e"],
+            index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
+                "Europe/Paris",
+            ),
+        )
+        decisions = CLIENT.decide_generator_boosting_from_contexts_df(
+            self.generator_id,
+            SIMPLE_AGENT_BOOSTING_DATA.first_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_MANY_DATA.last_valid_index().value // 10 ** 9,
+            context_df,
+        )
+        self.assertTrue(len(decisions.columns) == 1)
+        self.assertTrue("a_predicted_value" in decisions.columns)
+        self.assertTrue(
+            type(decisions.iloc[0]["a_predicted_value"]) == float
+            or type(decisions.iloc[0]["a_predicted_value"] == int)
+        )
 
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")

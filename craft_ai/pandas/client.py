@@ -4,7 +4,7 @@ import pandas as pd
 from .. import Client as VanillaClient
 from .. import Time
 from ..constants import DEFAULT_DECISION_TREE_VERSION
-from ..errors import CraftAiBadRequestError, CraftAiNullDecisionError
+from ..errors import CraftAiBadRequestError
 from .interpreter import Interpreter
 from .utils import format_input, is_valid_property_value, create_timezone_df
 
@@ -286,7 +286,9 @@ class Client(VanillaClient):
         }
         return context
 
-    def _pandas_agent_boosting_decide_from_df(self, agent_id, from_ts, to_ts, params, df):
+    def _pandas_agent_boosting_decide_from_df(
+        self, agent_id, from_ts, to_ts, params, df
+    ):
         decisions_payload = []
 
         for row in df.itertuples(name=None):
@@ -295,18 +297,27 @@ class Client(VanillaClient):
             time = self._generate_time_features(params, context)
             decide_context = self._generate_decision_context(params, context, time)
 
-            decisions_payload.append({
-                "entityName": agent_id,
-                "timeWindow": [from_ts, to_ts],
-                "context": decide_context
-            })
+            decisions_payload.append(
+                {
+                    "entityName": agent_id,
+                    "timeWindow": [from_ts, to_ts],
+                    "context": decide_context,
+                }
+            )
 
-        decisions = super(Client, self).get_agent_bulk_boosting_decision(decisions_payload)
+        decisions = super(Client, self).get_agent_bulk_boosting_decision(
+            decisions_payload
+        )
         output_name = params["configuration"]["output"][0]
 
-        return ({"{}_predicted_value".format(output_name): decision["output"]["predicted_value"]}
-            for decision in decisions)
-
+        return (
+            {
+                "{}_predicted_value".format(output_name): decision["output"][
+                    "predicted_value"
+                ]
+            }
+            for decision in decisions
+        )
 
     def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
         Client.check_decision_context_df(contexts_df)
@@ -322,11 +333,13 @@ class Client(VanillaClient):
                 "feature_names": df.columns.values,
                 "tz_col": tz_col,
             },
-            df
+            df,
         )
         return pd.DataFrame(predictions_iter, index=df.index)
 
-    def _pandas_generator_boosting_decide_from_df(self, generator_id, from_ts, to_ts, params, df):
+    def _pandas_generator_boosting_decide_from_df(
+        self, generator_id, from_ts, to_ts, params, df
+    ):
         decisions_payload = []
 
         for row in df.itertuples(name=None):
@@ -335,18 +348,27 @@ class Client(VanillaClient):
             time = self._generate_time_features(params, context)
             decide_context = self._generate_decision_context(params, context, time)
 
-            decisions_payload.append({
-                "entityName": generator_id,
-                "timeWindow": [from_ts, to_ts],
-                "context": decide_context
-            })
+            decisions_payload.append(
+                {
+                    "entityName": generator_id,
+                    "timeWindow": [from_ts, to_ts],
+                    "context": decide_context,
+                }
+            )
 
-        decisions = super(Client, self).get_generator_bulk_boosting_decision(decisions_payload)
+        decisions = super(Client, self).get_generator_bulk_boosting_decision(
+            decisions_payload
+        )
         output_name = params["configuration"]["output"][0]
 
-        return ({"{}_predicted_value".format(output_name): decision["output"]["predicted_value"]}
-            for decision in decisions)
-
+        return (
+            {
+                "{}_predicted_value".format(output_name): decision["output"][
+                    "predicted_value"
+                ]
+            }
+            for decision in decisions
+        )
 
     def decide_generator_boosting_from_contexts_df(
         self, generator_id, from_ts, to_ts, contexts_df
@@ -366,6 +388,6 @@ class Client(VanillaClient):
                 "feature_names": df.columns.values,
                 "tz_col": tz_col,
             },
-            df
+            df,
         )
         return pd.DataFrame(predictions_iter, index=df.index)
