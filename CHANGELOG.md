@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Add new boosting decision bulk routes.
+- Pandas client boosting decision methods nows use bulk.
 
 ## [2.2.2](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.1...v2.2.2) - 2021-04-15 ##
 
