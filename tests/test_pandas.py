@@ -708,19 +708,19 @@ class TestPandasDecisionContextGeneration(unittest.TestCase):
         CLIENT.delete_generator(self.generator_id)
 
     def test_time_features_generation(self):
-        # Ensures that toùe features are correctly generated.
+        # Ensures that time features are correctly generated.
         contexts_df = pd.DataFrame(
-            [[random(), random(), random(), "+01:00"] for i in range(4)],
+            [[random(), random(), random(), 1] for i in range(4)],
             columns=["b", "c", "d", "e"],
             index=pd.date_range("20200101", periods=4, freq="T").tz_localize(
                 "Europe/Paris",
             ),
         )
 
+        configuration = SIMPLE_AGENT_BOOSTING_CONFIGURATION_WITH_GEN_TYPE
         df, tz_col = CLIENT._generate_decision_df_and_tz_col(
-            self.generator_id, contexts_df, generator_decision=True
+            self.generator_id, contexts_df, configuration
         )
-        configuration = SIMPLE_AGENT_BOOSTING_CONFIGURATION
         params = {
             "context_ops": list(df.itertuples(name=None))[0],
             "configuration": configuration,
@@ -729,6 +729,7 @@ class TestPandasDecisionContextGeneration(unittest.TestCase):
         }
         context = CLIENT._check_context_properties(params)
         time = CLIENT._generate_time_features(params, context)
+        decide_context = CLIENT._generate_decision_context(params, context, time)
 
         time_dict = time.to_dict()
         self.assertEqual(time_dict["timestamp"], 1577833200)
@@ -738,3 +739,6 @@ class TestPandasDecisionContextGeneration(unittest.TestCase):
         self.assertEqual(time_dict["day_of_month"], 1)
         self.assertEqual(time_dict["month_of_year"], 1)
         self.assertEqual(time_dict["utc_iso"], "2020-01-01T00:00:00+01:00")
+
+        self.assertEqual(decide_context["e"], "+01:00")
+        self.assertEqual(decide_context["f"], 2)

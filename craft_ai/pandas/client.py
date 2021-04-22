@@ -226,16 +226,7 @@ class Client(VanillaClient):
 
         return df
 
-    def _generate_decision_df_and_tz_col(
-        self, entity_id, contexts_df, generator_decision=False
-    ):
-        if not generator_decision:
-            agent = super(Client, self).get_agent(entity_id)
-            configuration = agent["configuration"]
-        else:
-            generator = super(Client, self).get_generator(entity_id)
-            configuration = generator["configuration"]
-
+    def _generate_decision_df_and_tz_col(self, entity_id, contexts_df, configuration):
         df = contexts_df.copy(deep=True)
 
         tz_col = [
@@ -321,9 +312,11 @@ class Client(VanillaClient):
 
     def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
         Client.check_decision_context_df(contexts_df)
-        df, tz_col = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
-
         configuration = self.get_agent(agent_id)["configuration"]
+        df, tz_col = self._generate_decision_df_and_tz_col(
+            agent_id, contexts_df, configuration
+        )
+
         predictions_iter = self._pandas_agent_boosting_decide_from_df(
             agent_id,
             from_ts,
@@ -374,11 +367,11 @@ class Client(VanillaClient):
         self, generator_id, from_ts, to_ts, contexts_df
     ):
         Client.check_decision_context_df(contexts_df)
+        configuration = self.get_generator(generator_id)["configuration"]
         df, tz_col = self._generate_decision_df_and_tz_col(
-            generator_id, contexts_df, generator_decision=True
+            generator_id, contexts_df, configuration
         )
 
-        configuration = self.get_generator(generator_id)["configuration"]
         predictions_iter = self._pandas_generator_boosting_decide_from_df(
             generator_id,
             from_ts,
