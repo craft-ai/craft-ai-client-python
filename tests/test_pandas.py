@@ -576,6 +576,7 @@ class TestPandasBoostingSimpleAgent(unittest.TestCase):
             SIMPLE_AGENT_BOOSTING_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
+        self.assertEqual(decisions.shape[0], 4)
         self.assertTrue(len(decisions.columns) == 1)
         self.assertTrue("a_predicted_value" in decisions.columns)
         self.assertTrue(
@@ -622,6 +623,7 @@ class TestPandasBoostingGeneratorWithOperation(unittest.TestCase):
             SIMPLE_AGENT_BOOSTING_MANY_DATA.last_valid_index().value // 10 ** 9,
             context_df,
         )
+        self.assertEqual(decisions.shape[0], 4)
         self.assertTrue(len(decisions.columns) == 1)
         self.assertTrue("a_predicted_value" in decisions.columns)
         self.assertTrue(
