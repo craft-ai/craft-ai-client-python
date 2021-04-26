@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.3...HEAD) ##
 
+### Change
+
+- Pandas client boosting decision methods now use bulk.
+
 ## [2.2.3](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.2...v2.2.3) - 2021-04-21 ##
 
 ### Added

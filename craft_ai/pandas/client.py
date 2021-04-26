@@ -4,7 +4,7 @@ import pandas as pd
 from .. import Client as VanillaClient
 from .. import Time
 from ..constants import DEFAULT_DECISION_TREE_VERSION
-from ..errors import CraftAiBadRequestError, CraftAiNullDecisionError
+from ..errors import CraftAiBadRequestError
 from .interpreter import Interpreter
 from .utils import format_input, is_valid_property_value, create_timezone_df
 
@@ -226,16 +226,7 @@ class Client(VanillaClient):
 
         return df
 
-    def _generate_decision_df_and_tz_col(
-        self, entity_id, contexts_df, generator_decision=False
-    ):
-        if not generator_decision:
-            agent = super(Client, self).get_agent(entity_id)
-            configuration = agent["configuration"]
-        else:
-            generator = super(Client, self).get_generator(entity_id)
-            configuration = generator["configuration"]
-
+    def _generate_decision_df_and_tz_col(self, entity_id, contexts_df, configuration):
         df = contexts_df.copy(deep=True)
 
         tz_col = [
@@ -286,78 +277,110 @@ class Client(VanillaClient):
         }
         return context
 
-    def pandas_agent_boosting_decide_from_row(self, agent_id, from_ts, to_ts, params):
-        context = self._check_context_properties(params)
-        time = self._generate_time_features(params, context)
-        decide_context = self._generate_decision_context(params, context, time)
+    def _pandas_agent_boosting_decide_from_df(
+        self, agent_id, from_ts, to_ts, params, df
+    ):
+        decisions_payload = []
 
-        try:
-            decision = super(Client, self).get_agent_boosting_decision(
-                agent_id, from_ts, to_ts, decide_context
+        for row in df.itertuples(name=None):
+            params["context_ops"] = row
+            context = self._check_context_properties(params)
+            time = self._generate_time_features(params, context)
+            decide_context = self._generate_decision_context(params, context, time)
+
+            decisions_payload.append(
+                {
+                    "entityName": agent_id,
+                    "timeWindow": [from_ts, to_ts],
+                    "context": decide_context,
+                }
             )
-            return {"output_predicted_value": decision["output"]["predicted_value"]}
 
-        except CraftAiNullDecisionError as e:
-            return {"error": e.message}
+        decisions = super(Client, self).get_agent_bulk_boosting_decision(
+            decisions_payload
+        )
+        output_name = params["configuration"]["output"][0]
+
+        return (
+            {
+                "{}_predicted_value".format(output_name): decision["output"][
+                    "predicted_value"
+                ]
+            }
+            for decision in decisions
+        )
 
     def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
         Client.check_decision_context_df(contexts_df)
-        df, tz_col = self._generate_decision_df_and_tz_col(agent_id, contexts_df)
-
         configuration = self.get_agent(agent_id)["configuration"]
-        predictions_iter = (
-            self.pandas_agent_boosting_decide_from_row(
-                agent_id,
-                from_ts,
-                to_ts,
-                {
-                    "context_ops": row,
-                    "configuration": configuration,
-                    "feature_names": df.columns.values,
-                    "tz_col": tz_col,
-                },
-            )
-            for row in df.itertuples(name=None)
+        df, tz_col = self._generate_decision_df_and_tz_col(
+            agent_id, contexts_df, configuration
+        )
+
+        predictions_iter = self._pandas_agent_boosting_decide_from_df(
+            agent_id,
+            from_ts,
+            to_ts,
+            {
+                "configuration": configuration,
+                "feature_names": df.columns.values,
+                "tz_col": tz_col,
+            },
+            df,
         )
         return pd.DataFrame(predictions_iter, index=df.index)
 
-    def pandas_generator_boosting_decide_from_row(
-        self, generator_id, from_ts, to_ts, params
+    def _pandas_generator_boosting_decide_from_df(
+        self, generator_id, from_ts, to_ts, params, df
     ):
-        context = self._check_context_properties(params)
-        time = self._generate_time_features(params, context)
-        decide_context = self._generate_decision_context(params, context, time)
+        decisions_payload = []
 
-        try:
-            decision = super(Client, self).get_generator_boosting_decision(
-                generator_id, from_ts, to_ts, decide_context
+        for row in df.itertuples(name=None):
+            params["context_ops"] = row
+            context = self._check_context_properties(params)
+            time = self._generate_time_features(params, context)
+            decide_context = self._generate_decision_context(params, context, time)
+
+            decisions_payload.append(
+                {
+                    "entityName": generator_id,
+                    "timeWindow": [from_ts, to_ts],
+                    "context": decide_context,
+                }
             )
-            return {"output_predicted_value": decision["output"]["predicted_value"]}
 
-        except CraftAiNullDecisionError as e:
-            return {"error": e.message}
+        decisions = super(Client, self).get_generator_bulk_boosting_decision(
+            decisions_payload
+        )
+        output_name = params["configuration"]["output"][0]
+
+        return (
+            {
+                "{}_predicted_value".format(output_name): decision["output"][
+                    "predicted_value"
+                ]
+            }
+            for decision in decisions
+        )
 
     def decide_generator_boosting_from_contexts_df(
         self, generator_id, from_ts, to_ts, contexts_df
     ):
         Client.check_decision_context_df(contexts_df)
+        configuration = self.get_generator(generator_id)["configuration"]
         df, tz_col = self._generate_decision_df_and_tz_col(
-            generator_id, contexts_df, generator_decision=True
+            generator_id, contexts_df, configuration
         )
 
-        configuration = self.get_generator(generator_id)["configuration"]
-        predictions_iter = (
-            self.pandas_generator_boosting_decide_from_row(
-                generator_id,
-                from_ts,
-                to_ts,
-                {
-                    "context_ops": row,
-                    "configuration": configuration,
-                    "feature_names": df.columns.values,
-                    "tz_col": tz_col,
-                },
-            )
-            for row in df.itertuples(name=None)
+        predictions_iter = self._pandas_generator_boosting_decide_from_df(
+            generator_id,
+            from_ts,
+            to_ts,
+            {
+                "configuration": configuration,
+                "feature_names": df.columns.values,
+                "tz_col": tz_col,
+            },
+            df,
         )
         return pd.DataFrame(predictions_iter, index=df.index)
