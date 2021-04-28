@@ -1328,7 +1328,11 @@ class Client(object):
         elif status_code == 404:
             err = CraftAiNotFoundError(message)
         elif status_code == 413:
-            err = CraftAiBadRequestError("Given payload is too large")
+            err = CraftAiBadRequestError(
+                """The payload is too large."""
+                """Please consider decreasing the client configuration"""
+                """parameter 'operationsChunksSize'"""
+            )
         elif status_code == 500:
             err = CraftAiInternalError(message)
         elif status_code == 503:
