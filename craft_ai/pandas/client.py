@@ -313,11 +313,11 @@ class Client(VanillaClient):
     def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
         full_decision_df = None
 
+        Client.check_decision_context_df(contexts_df)
+        configuration = self.get_agent(agent_id)["configuration"]
+
         chunk_size = self.config["operationsChunksSize"]
         for chunk in chunker(contexts_df, chunk_size):
-            Client.check_decision_context_df(chunk)
-            configuration = self.get_agent(agent_id)["configuration"]
-
             df, tz_col = self._generate_decision_df_and_tz_col(
                 agent_id, chunk, configuration
             )
