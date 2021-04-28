@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.4...HEAD) ##
 
+### Change
+
+- Boosting decisions are now taken on chunks instead of whole test dataframe.
+
 ## [2.2.4](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.3...v2.2.4) - 2021-04-26 ##
 
 ### Change
