@@ -1,6 +1,6 @@
 # **craft ai** API python client #
 
-[![PyPI](https://img.shields.io/pypi/v/craft-ai.svg?style=flat-square)](https://pypi.python.org/pypi?:action=display&name=craft-ai) [![Build Status](https://img.shields.io/travis/craft-ai/craft-ai-client-python/master.svg?style=flat-square)](https://travis-ci.org/craft-ai/craft-ai-client-python) [![License](https://img.shields.io/badge/license-BSD--3--Clause-42358A.svg?style=flat-square)](LICENSE) [![python](https://img.shields.io/pypi/pyversions/craft-ai.svg?style=flat-square)](https://pypi.python.org/pypi?:action=display&name=craft-ai)
+[![PyPI](https://img.shields.io/pypi/v/craft-ai.svg?style=flat-square)](https://pypi.python.org/pypi?:action=display&name=craft-ai) [![Build Status](https://github.com/craft-ai/craft-ai-client-python/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/craft-ai/craft-ai-client-python/actions) [![License](https://img.shields.io/badge/license-BSD--3--Clause-42358A.svg?style=flat-square)](LICENSE) [![python](https://img.shields.io/pypi/pyversions/craft-ai.svg?style=flat-square)](https://pypi.python.org/pypi?:action=display&name=craft-ai)
 
 [**craft ai**'s Explainable AI API](http://craft.ai) enables product & operational teams to quickly deploy and run explainable AIs. craft ai decodes your data streams to deliver self-learning services.
 
@@ -44,9 +44,9 @@ client = craft_ai.Client({
 
 **craft ai** is based on the concept of **agents**. In most use cases, one agent is created per user or per device.
 
-An agent is an independent module that stores the history of the **context** of its user or device's context, and learns which **decision** to make based on the evolution of this context in the form of a **decision tree**.
+An agent is an independent data set that stores the history of the **context** of its user or device's context, and learns which **prediction** to make based on the evolution of this context.
 
-In this example, we will create an agent that learns the **decision model** of a light bulb based on the time of the day and the number of people in the room. This dataset is treated as continuous context updates. If your data is more like events, please refer to the [Advanced Configuration section](#advanced-configuration) to know how to configure your agent. Here, the agent's context has 4 properties:
+In this example, we will create an agent that learns the **predictive model** of a light bulb based on the time of the day and the number of people in the room. This dataset is treated as continuous context updates. If your data is more like events than context changes, please refer to the [Advanced Configuration section](#advanced-configuration) to know how to configure `operations_as_events` for your agent. Here, the agent's context has 4 properties or features:
 
 - `peopleCount` which is a `continuous` property,
 - `timeOfDay` which is a `time_of_day` property,
@@ -72,6 +72,7 @@ configuration = {
       "type": "enum"
     }
   },
+  "model_type": "decisionTree",
   "output": ["lightbulbState"]
 }
 
@@ -81,7 +82,7 @@ print("Agent", agent["id"], "has successfully been created")
 
 Pretty straightforward to test! Open [`https://beta.craft.ai/inspector`](https://beta.craft.ai/inspector), select you project and your agent is now listed.
 
-Now, if you run that a second time, you'll get an error: the agent `'my_first_agent'` is already existing. Let's see how we can delete it before recreating it.
+Now, if you run that a second time, you'll get an error: the agent `'my_first_agent'` was already created. Let's see how we can delete it before recreating it.
 
 ```python
 agent_id = "my_first_agent"
@@ -196,9 +197,9 @@ _For further information, check the ['add context operations' reference document
 
 ### 5 - Compute the decision tree
 
-The agent has acquired a context history, we can now compute a decision tree from it! A decision tree models the output, allowing us to estimate what the output would be in a given context.
+The agent has acquired a context history, we can now compute a model (in this case a decision tree) from it! A decision tree models the output, allowing us to estimate what the output would be in a given context.
 
-The decision tree is computed at a given timestamp, which means it will consider the context history from the creation of this agent up to this moment. Let's first try to compute the decision tree at midnight on July 26, 2016.
+The decision tree is computed at a given timestamp, which means it will consider the data from the creation of this agent up to this moment. Let's first try to compute the decision tree at midnight on July 26, 2016.
 
 ```python
 agent_id = "my_first_agent"
@@ -365,7 +366,7 @@ _For further information, check the ['compute decision tree' reference documenta
 
 ### 6 - Make a decision
 
-Once the decision tree is computed it can be used to make a decision. In our case it is basically answering this type of question: "What is the anticipated **state of the lightbulb** at 7:15 if there are 2 persons in the room ?".
+Once the decision tree is computed it can be used to make a decision or prediction. In our case it is basically answering this type of question: "What is the anticipated **state of the lightbulb** at 7:15 if there are 2 persons in the room ?".
 
 ```python
 agent_id = "my_first_agent"
@@ -415,9 +416,7 @@ Each agent has a configuration defining:
 
 - the context schema, i.e. the list of property keys and their type (as defined in the following section),
 - the output properties, i.e. the list of property keys on which the agent makes decisions,
-- the model type, the possible values are `decision_tree` or `boosting`.
-
-> :warning: In the current version, only one output property can be provided.
+- the model type, either decision tree or gradient boosting.
 
 #### Context properties types
 
@@ -431,7 +430,7 @@ Each agent has a configuration defining:
 
 > :warning: the absolute value of a `continuous` property must be less than 10<sup>20</sup>.
 
-Here is a simple example of configuration :
+Here is a simple example of configuration for decision tree:
 ```json
 {
   "context": {
@@ -445,7 +444,31 @@ Here is a simple example of configuration :
       "type": "enum"
     }
   },
+  "model_type": "decisionTree",
   "output": ["lightbulbState"],
+  "time_quantum": 100,
+  "learning_period": 108000
+}
+```
+
+And another simple example of configuration for gradient boosting:
+```json
+{
+  "context": {
+    "timezone": {
+      "type": "enum"
+    },
+    "temperature": {
+      "type": "continuous"
+    },
+    "lightbulbState": {
+      "type": "enum"
+    }
+  },
+  "model_type": "boosting",
+  "output": ["lightbulbState"],
+  "learning_rate": 1,
+  "num_iterations": 50,
   "time_quantum": 100,
   "learning_period": 108000
 }
@@ -557,6 +580,7 @@ the decision model.
       "type": "enum"
     }
   },
+  "model_type": "decisionTree",
   "output": ["lightbulbColor"],
   "time_quantum": 100,
   "learning_period": 108000
@@ -584,6 +608,7 @@ provided continuously.
       "type": "enum"
     }
   },
+  "model_type": "decisionTree",
   "output": ["lightbulbColor"],
   "time_quantum": 100,
   "learning_period": 108000
@@ -646,9 +671,10 @@ The following configuration parameters can be set in specific cases.
 
 #### Common parameters
 
+- **`model_type`**, i.e. the selected model. Values can be `decisionTree` or `boosting`. If not set, the default value is `decisionTree`.
 - **`time_quantum`**, i.e. the minimum amount of time, in seconds, that is meaningful for an agent; context updates occurring faster than this quantum won't be taken into account. As a rule of thumb, you should always choose the largest value that seems right and reduce it, if necessary, after some tests. Default value is 600. This parameter is ignored if `operations_as_events` is set to `true`.
-- **`operations_as_events`** is a boolean, either `true` or `false`. The default value is `false`. If you are not sure what to do, set it to `true`. If it is set to false, context operations are treated as state changes, and models are based on the resulting continuous state including between data points, using `time_quantum` as the sampling step. If it is set to true, context operations are treated as observations or events, and models are based on these data points directly, as in most machine learning libraries. If `operations_as_events` is `true`, `tree_max_operations` and generally `learning_period` must be set, and `time_quantum` is ignored because events have no duration.
-- **`tree_max_operations`** is a positive integer. It **can and must** be set only if `operations_as_events` is `true`. It defines the maximum number of events on which a single decision tree can be based. It is complementary to `learning_period`, which limits the maximum age of events on which a decision tree is based.
+- **`operations_as_events`** is a boolean, either `true` or `false`. The default value is `false`. If you are not sure what to do, set it to `true`. If it is set to false, context operations are treated as state changes, and models are based on the resulting continuous state including between data points, using `time_quantum` as the sampling step. If it is set to true, context operations are treated as observations or events, and models are based on these data points directly, as in most machine learning libraries. If `operations_as_events` is `true`, `max_training_samples` and `learning_period` for decision trees must be set, and `time_quantum` is ignored because events have no duration.
+- **`max_training_samples`** is a positive integer. It **can and must** be set only if `operations_as_events` is `true`. It defines the maximum number of events on which a model can be based. It is complementary to `learning_period` for decision trees, which limits the maximum age of data on which a model is based.
 - **`min_samples_per_leaf`** is a positive integer. It defines the minimum number of samples in a tree leaf. It is complementary to `tree_max_depth` in preventing the tree from overgrowing, hence limiting overfitting. By default, `min_samples_per_leaf` is set to 4.
 - **`tree_max_depth`** is a positive integer. It defines the maximum depth of decision trees, which is the maximum distance between the root node and a leaf (terminal) node. A depth of 0 means that the tree is made of a single root node. By default, `tree_max_depth` is set to 6 if the output is categorical (e.g. `enum`), or to 4 if the output is numerical (e.g. `continuous`) or if it's a boosting configuration.
 
@@ -658,7 +684,7 @@ The following configuration parameters can be set in specific cases.
 
 #### Boosting parameters
 
-- **`learning_rate`** is a positive float. It defines the step size shrinkage used between tree updates to prevent overfitting. Its value must be between `]0;1]`.
+- **`learning_rate`** is a positive float. It defines the step size shrinkage used between tree updates to prevent overfitting. Its value must be in `]0;1]`.
 - **`num_iterations`** is a positive integer. It describes the number of trees that would be created for the forest.
 
 ### Agent
@@ -686,6 +712,7 @@ client.create_agent(
         "type": "enum"
       }
     },
+    "model_type": "decisionTree",
     "output": [ "lightbulbState" ],
     "time_quantum": 100,
     "learning_period": 108000
@@ -746,15 +773,15 @@ client.delete_shared_agent_inspector_url(
 
 ### Generator
 
-The craft ai API lets you generate decision trees built on data from one or several agents by creating a generator. It is useful to:
+The craft ai API lets you generate models built on data from one or several agents by creating a generator. It is useful to:
   - test several hyper-parameters and features sets without reloading all the data for each try
-  - gather data from different agents to make new models on top of them, enhancing the possible data combinations and allowing you to inspect the global behavior across your agents
+  - gather data from different agents to make new models based on several data sources, enhancing the possible data combinations and allowing you to inspect the global behavior across your agents
 
-We define the data stream(s) used by a generator by specifying a list of agents as a filter in its configuration. Other than the filter, the configuration of a generator is similar to an agent's configuration. It has to verify some additional properties:
+The data stream(s) used by a generator are defined by specifying a list of agents as a filter in its configuration. Other than the filter, the configuration of a generator is similar to an agent's configuration. But it has to verify some additional properties:
 
 - Every feature defined in the context configuration of the generator must be present in **all** the agent that match the filter, with the same context types.
-- The parameters `operations_as_events` must be set to true.
-- It follows that the parameters `tree_max_operations` and `learning_period` must be set with valid integers.
+- The parameter `operations_as_events` must be set to `true`.
+- It follows that the parameters `max_training_samples`, and `learning_period` in the case of decision trees, must be set.
 - The agent names provided in the list must be valid agent identifiers.
 
 #### Create
@@ -764,9 +791,8 @@ Create a new generator, and define its [configuration](#configuration).
 > The generator's identifier is a case sensitive string between 1 and 36 characters long. It only accepts letters, digits, hyphen-minuses and underscores (i.e. the regular expression `/[a-zA-Z0-9_-]{1,36}/`).
 
 ```python
-
-GENERATOR_NAME = 'smarthome_gen'
-GENERATOR_FILTER = ['smarthome']
+GENERATOR_NAME = "smarthome_gen"
+GENERATOR_FILTER = ["smarthome"]
 GENERATOR_CONFIGURATION = {
   "context": {
     "light": {
@@ -783,13 +809,14 @@ GENERATOR_CONFIGURATION = {
       "is_generated": True
     }
   },
+  "model_type": "decisionTree",
   "output": [
     "light"
   ],
   "learning_period": 1500000,
-  "tree_max_operations": 15000,
+  "max_training_samples": 15000,
   "operations_as_events": True,
-  'filter': GENERATOR_FILTER
+  "filter": GENERATOR_FILTER
 }
 
 client.create_generator(
@@ -823,7 +850,7 @@ client.get_generator(
   "configuration": {
     "operations_as_events": True,
     "learning_period": 1500000,
-    "tree_max_operations": 15000,
+    "max_training_samples": 15000,
     "context": {
       "light": {
         "type": "enum"
@@ -882,237 +909,6 @@ client.get_generator_operations(
 ```
 
 > This call can generate multiple requests to the craft ai API as results are paginated.
-
-#### Get decision tree
-
-```python
-DECISION_TREE_TIMESTAMP = 1469473600
-GENERATOR_NAME = 'smarthome_gen'
-client.get_generator_decision_tree(
-  GENERATOR_NAME, # The generator id
-  DECISION_TREE_TIMESTAMP # The timestamp at which the decision tree is retrieved
-)
-
-""" Outputted tree is the following
-{
-  "_version": "2.0.0",
-  "trees": {
-    "light": {
-      "children": [
-        {
-          "predicted_value": "OFF",
-          "confidence": 0.9966583847999572,
-          "decision_rule": {
-            "operand": [
-              7.25,
-              22.65
-            ],
-            "operator": "[in[",
-            "property": "time"
-          }
-        },
-        {
-          "children": [
-            {
-              "predicted_value": "ON",
-              "confidence": 0.9618390202522278,
-              "decision_rule": {
-                "operand": [
-                  22.65,
-                  0.06666667
-                ],
-                "operator": "[in[",
-                "property": "time"
-              }
-            },
-            {
-              "children": [
-                {
-                  "predicted_value": "OFF",
-                  "confidence": 0.9797198176383972,
-                  "decision_rule": {
-                    "operand": [
-                      0.06666667,
-                      0.6
-                    ],
-                    "operator": "[in[",
-                    "property": "time"
-                  }
-                },
-                {
-                  "children": [
-                    {
-                      "predicted_value": "ON",
-                      "confidence": 0.9585137963294984,
-                      "decision_rule": {
-                        "operand": [
-                          0.6,
-                          2.25
-                        ],
-                        "operator": "[in[",
-                        "property": "time"
-                      }
-                    },
-                    {
-                      "children": [
-                        {
-                          "predicted_value": "OFF",
-                          "confidence": 0.8077218532562256,
-                          "decision_rule": {
-                            "operand": [
-                              2.25,
-                              2.4666667
-                            ],
-                            "operator": "[in[",
-                            "property": "time"
-                          }
-                        }
-                      ],
-                      "decision_rule": {
-                        "operand": [
-                          2.25,
-                          7.25
-                        ],
-                        "operator": "[in[",
-                        "property": "time"
-                      }
-                    }
-                  ],
-                  "decision_rule": {
-                    "operand": [
-                      0.6,
-                      7.25
-                    ],
-                    "operator": "[in[",
-                    "property": "time"
-                  }
-                }
-              ],
-              "decision_rule": {
-                "operand": [
-                  0.06666667,
-                  7.25
-                ],
-                "operator": "[in[",
-                "property": "time"
-              }
-            }
-          ],
-          "decision_rule": {
-            "operand": [
-              22.65,
-              7.25
-            ],
-            "operator": "[in[",
-            "property": "time"
-          }
-        }
-      ]
-    }
-  },
-  "configuration": {
-    "operations_as_events": True,
-    "learning_period": 1500000,
-    "tree_max_operations": 15000,
-    "context": {
-      "light": {
-        "type": "enum"
-      },
-      "tz": {
-        "type": "timezone"
-      },
-      "movement": {
-        "type": "continuous"
-      },
-      "time": {
-        "type": "time_of_day",
-        "is_generated": True
-      }
-    },
-    "output": [
-      "light"
-    ],
-    "filter": [
-      "smarthome"
-    ]
-  }
-}
-"""
-```
-
-#### Get decision
-
-```python
-const CONTEXT_OPS = {
-  "tz": "+02:00",
-  "movement": 2,
-  "time": 7.5
-};
-const DECISION_TREE_TIMESTAMP = 1469473600;
-const GENERATOR_NAME = 'smarthome_gen';
-
-client.computeGeneratorDecision(
-  GENERATOR_NAME, # The name of the generator
-  DECISION_TREE_TIMESTAMP, # The timestamp at which the decision tree is retrieved
-  CONTEXT_OPS # A valid context operation according to the generator configuration
-)
-"""
-{
-  "_version": "2.0.0",
-  "context": {
-    "tz": "+02:00",
-    "movement": 2,
-    "time": 7.5
-  },
-  "output": {
-    "light": {
-      "predicted_value": "OFF",
-      "confidence": 0.8386044502258301,
-      "decision_rules": [
-        {
-          "operand": [
-            2.1166666,
-            10.333333
-          ],
-          "operator": "[in[",
-          "property": "time"
-        },
-        {
-          "operand": [
-            2.1166666,
-            9.3
-          ],
-          "operator": "[in[",
-          "property": "time"
-        },
-        {
-          "operand": [
-            2.1166666,
-            8.883333
-          ],
-          "operator": "[in[",
-          "property": "time"
-        },
-        {
-          "operand": [
-            3.5333333,
-            8.883333
-          ],
-          "operator": "[in[",
-          "property": "time"
-        }
-      ],
-      "nb_samples": 442,
-      "decision_path": "0-0-0-0-1",
-      "distribution": [
-        0.85067874,
-        0.14932127
-      ]
-    }
-  }
-}
-"""
-```
 
 ### Context
 
@@ -1262,21 +1058,25 @@ client.get_agent_states(
 )
 ```
 
-### Boosting
+### Gradient boosting
 
-Before using the boosting you need to know that there is some parameter that differ for the one used by default by the LightGBM.
+Models can be generated with gradient boosting by setting the configuration parameter `model_type` to `boosting`. Models are based on training data within a provided timestamp window among data that was [added](#add-operations). You can only query predictions directly for gradient boosting models.
 
-For the classification:
+The implementation is based on LightGBM, but there are some parameters that differ from the ones used by default by LightGBM.
+
+For classification:
 
 - **`max_bin`** = 255. Max number of bins that feature values will be bucketed in (https://lightgbm.readthedocs.io/en/latest/Parameters.html#max_bin).
 
-For the regression:
+For regression:
 
 - **`metric`** = L2 (alias mse). Metric(s) to be evaluated on the evaluation set(s) (https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric).
 - **`feature_fraction`** = 0.9. Randomly select a subset of features on each iteration (https://lightgbm.readthedocs.io/en/latest/Parameters.html#feature_fraction).
 - **`bagging_freq`** = 5. Perform bagging at every k iteration. Every k-th iteration, LightGBM will randomly select `bagging_fraction` * 100% of the data to use for the next k iterations (https://lightgbm.readthedocs.io/en/latest/Parameters.html#bagging_freq).
 - **`bagging_fraction`** = 0.8. It will randomly select part of data without resampling (https://lightgbm.readthedocs.io/en/latest/Parameters.html#bagging_fraction).
 - **`min_sum_hessian_in_leaf`** = 5.0. It's the minimal sum hessian in one leaf (https://lightgbm.readthedocs.io/en/latest/Parameters.html#min_sum_hessian_in_leaf).
+
+ See the [configuration](#configuration) section for parameters that you can set.
 
 #### Get decision using boosting for agent
 
@@ -1289,7 +1089,7 @@ PREDICTION_CONTEXT = {
   "time": 7.5
 }
 
-client.compute_agent_boosting_decision(
+client.get_agent_boosting_decision(
   'impervious_kraken', // The generator id
   FROM_TIMESTAMP,
   TO_TIMESTAMP,
@@ -1297,15 +1097,13 @@ client.compute_agent_boosting_decision(
 )
 """
 {
-"context": {
+  "context": {
     "tz": "+02:00",
     "movement": 2,
     "time": 7.5
-},
-"output": {
-    "light": {
-        "predicted_value": "OFF"
-    }
+  },
+  "output": {
+    "predicted_value": "OFF"
   }
 }
 """
@@ -1330,15 +1128,13 @@ client.compute_generator_boosting_decision(
 )
 """
 {
-"context": {
+  "context": {
     "tz": "+02:00",
     "movement": 2,
     "time": 7.5
-},
-"output": {
-    "light": {
-        "predicted_value": "OFF"
-    }
+  },
+  "output": {
+    "predicted_value": "OFF"
   }
 }
 """
@@ -1346,11 +1142,11 @@ client.compute_generator_boosting_decision(
 
 ### Decision tree
 
-Decision trees are computed at specific timestamps, directly by **craft ai** which learns from the context operations [added](#add-operations) throughout time.
+Models can be generated as single decision trees by setting the configuration parameter `model_type` to `decisionTree`. Decision trees are computed based on data up to a specific timestamp and dating back to the `learning_period` configuration parameter among data that was [added](#add-operations).
 
 When you [compute](#compute) a decision tree, **craft ai** returns an object containing:
 
-- the **API version**
+- the version of the model's format
 - the agent's configuration as specified during the agent's [creation](#create-agent)
 - the tree itself as a JSON object:
 
@@ -1358,7 +1154,7 @@ When you [compute](#compute) a decision tree, **craft ai** returns an object con
   - Leaves have a `"predicted_value"`, `"confidence"` and `"decision_rule"` object for this value, instead of a `"children"` array. `"predicted_value`" is an estimation of the output in the contexts matching the node. `"confidence"` is a number between 0 and 1 that indicates how confident **craft ai** is that the output is a reliable prediction. When the output is a numerical type, leaves also have a `"standard_deviation"` that indicates a margin of error around the `"predicted_value"`.
   - The root only contains a `"children"` array.
 
-#### Compute
+#### Get decision tree for an agent
 
 ```python
 client.get_agent_decision_tree(
@@ -1369,15 +1165,246 @@ client.get_agent_decision_tree(
 )
 ```
 
-#### Make decision
+#### Get decision using a decision tree for an agent
 
-> :information_source: To make a decision, first compute the decision tree then use the **offline interpreter**.
+> :information_source: To make a decision (prediction) with decision tree, first compute the decision tree then use the **offline interpreter**.
+
+#### Get decision tree for a generator
+
+```python
+DECISION_TREE_TIMESTAMP = 1469473600
+GENERATOR_NAME = 'smarthome_gen'
+client.get_generator_decision_tree(
+  GENERATOR_NAME, # The generator id
+  DECISION_TREE_TIMESTAMP # The timestamp at which the decision tree is retrieved
+)
+
+""" Outputted tree is the following
+{
+  "_version": "2.0.0",
+  "trees": {
+    "light": {
+      "children": [
+        {
+          "predicted_value": "OFF",
+          "confidence": 0.9966583847999572,
+          "decision_rule": {
+            "operand": [
+              7.25,
+              22.65
+            ],
+            "operator": "[in[",
+            "property": "time"
+          }
+        },
+        {
+          "children": [
+            {
+              "predicted_value": "ON",
+              "confidence": 0.9618390202522278,
+              "decision_rule": {
+                "operand": [
+                  22.65,
+                  0.06666667
+                ],
+                "operator": "[in[",
+                "property": "time"
+              }
+            },
+            {
+              "children": [
+                {
+                  "predicted_value": "OFF",
+                  "confidence": 0.9797198176383972,
+                  "decision_rule": {
+                    "operand": [
+                      0.06666667,
+                      0.6
+                    ],
+                    "operator": "[in[",
+                    "property": "time"
+                  }
+                },
+                {
+                  "children": [
+                    {
+                      "predicted_value": "ON",
+                      "confidence": 0.9585137963294984,
+                      "decision_rule": {
+                        "operand": [
+                          0.6,
+                          2.25
+                        ],
+                        "operator": "[in[",
+                        "property": "time"
+                      }
+                    },
+                    {
+                      "children": [
+                        {
+                          "predicted_value": "OFF",
+                          "confidence": 0.8077218532562256,
+                          "decision_rule": {
+                            "operand": [
+                              2.25,
+                              2.4666667
+                            ],
+                            "operator": "[in[",
+                            "property": "time"
+                          }
+                        }
+                      ],
+                      "decision_rule": {
+                        "operand": [
+                          2.25,
+                          7.25
+                        ],
+                        "operator": "[in[",
+                        "property": "time"
+                      }
+                    }
+                  ],
+                  "decision_rule": {
+                    "operand": [
+                      0.6,
+                      7.25
+                    ],
+                    "operator": "[in[",
+                    "property": "time"
+                  }
+                }
+              ],
+              "decision_rule": {
+                "operand": [
+                  0.06666667,
+                  7.25
+                ],
+                "operator": "[in[",
+                "property": "time"
+              }
+            }
+          ],
+          "decision_rule": {
+            "operand": [
+              22.65,
+              7.25
+            ],
+            "operator": "[in[",
+            "property": "time"
+          }
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "operations_as_events": True,
+    "learning_period": 1500000,
+    "max_training_samples": 15000,
+    "context": {
+      "light": {
+        "type": "enum"
+      },
+      "tz": {
+        "type": "timezone"
+      },
+      "movement": {
+        "type": "continuous"
+      },
+      "time": {
+        "type": "time_of_day",
+        "is_generated": True
+      }
+    },
+    "output": [
+      "light"
+    ],
+    "filter": [
+      "smarthome"
+    ]
+  }
+}
+"""
+```
+
+#### Get decision using a decision tree for a generator
+
+```python
+const CONTEXT_OPS = {
+  "tz": "+02:00",
+  "movement": 2,
+  "time": 7.5
+};
+const DECISION_TREE_TIMESTAMP = 1469473600;
+const GENERATOR_NAME = 'smarthome_gen';
+
+client.computeGeneratorDecision(
+  GENERATOR_NAME, # The name of the generator
+  DECISION_TREE_TIMESTAMP, # The timestamp at which the decision tree is retrieved
+  CONTEXT_OPS # A valid context operation according to the generator configuration
+)
+"""
+{
+  "_version": "2.0.0",
+  "context": {
+    "tz": "+02:00",
+    "movement": 2,
+    "time": 7.5
+  },
+  "output": {
+    "light": {
+      "predicted_value": "OFF",
+      "confidence": 0.8386044502258301,
+      "decision_rules": [
+        {
+          "operand": [
+            2.1166666,
+            10.333333
+          ],
+          "operator": "[in[",
+          "property": "time"
+        },
+        {
+          "operand": [
+            2.1166666,
+            9.3
+          ],
+          "operator": "[in[",
+          "property": "time"
+        },
+        {
+          "operand": [
+            2.1166666,
+            8.883333
+          ],
+          "operator": "[in[",
+          "property": "time"
+        },
+        {
+          "operand": [
+            3.5333333,
+            8.883333
+          ],
+          "operator": "[in[",
+          "property": "time"
+        }
+      ],
+      "nb_samples": 442,
+      "decision_path": "0-0-0-0-1",
+      "distribution": [
+        0.85067874,
+        0.14932127
+      ]
+    }
+  }
+}
+"""
+```
 
 ### Bulk
 
-The craft ai API includes a bulk route which provides a programmatic option to perform asynchronous operations on agents. It allows the user to create, delete, add operations and compute decision trees for several agents at once.
+The craft ai API includes a bulk route which provides a programmatic option to perform multiple operations at once.
 
-> :warning: the bulk API is a quite advanced feature. It comes on top of the basic routes to create, delete, add context operations and compute decision tree. If messages are not self-explanatory, please refer to the basic routes that does the same operation for a single agent.
+> :warning: the bulk API comes on top of the basic routes described above, and requires an understanding of what they do. For more information, please refer to the basic routes that do the same operations one at a time.
 
 
 
@@ -1450,7 +1477,7 @@ deletion_bulk_payload = [
   {'id': agent_id_2}
 ]
 
-deleted_agents = client.delete_agents_bulk(creation_bulk_payload)
+deleted_agents = client.delete_agents_bulk(deletion_bulk_payload)
 print(agents_deleted)
 ```
 
@@ -1479,7 +1506,7 @@ The variable `deleted_agents` is an **array of responses**. If an agent has been
 ]
 ```
 
-#### Bulk - Add context Operations
+#### Bulk - Add context operations
 
 To add operations to several agents at once, use the method `add_agents_operations_bulk` as the following:
 
@@ -1547,9 +1574,9 @@ The variable `agents` is an **array of responses**. If an agent has successfully
 ]
 ```
 
-#### Bulk - Compute agents' decision trees
+#### Bulk - Compute decision trees for agents
 
-To get the tree of several agents at once, use the method `get_agents_decision_trees_bulk` as the following:
+To get several decision trees of agents at once, use the method `get_agents_decision_trees_bulk` as the following:
 
 ```python
 agent_id_1 = 'my_first_agent'
@@ -1562,7 +1589,7 @@ decision_tree_bulk_payload =  [
 
 trees = client.get_agents_decision_trees_bulk(decision_tree_bulk_payload)
 ```
-The variable `trees` is an **array of responses**. If an agent’s model has successfully been created, the corresponding response is an object similar to the classic `get_agents_decision_trees_bulk()` response. When there are **mixed results**, trees should looks like:
+The variable `trees` is an **array of responses**. If a decision trees has successfully been retrieved, the corresponding response is an object similar to the classic `get_agent_decision_tree()` response. When there are **mixed results**, trees should looks like:
 
 ```python
 [
@@ -1585,17 +1612,298 @@ The variable `trees` is an **array of responses**. If an agent’s model has suc
 ]
 ```
 
+#### Bulk - Compute boosting decisions for agents
+
+To fetch several boosting predictions at once for agents, use the method `get_agent_bulk_boosting_decision` as the following:
+
+```python
+request_payload = [
+  {
+    "entityName": "my_first_agent",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 19,
+      "timeOfDay": 7.5,
+      "timezone": "+02:00"
+    }
+  },
+  {
+    "entityName": "my_first_agent",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 21,
+      "timeOfDay": 5,
+      "timezone": "+02:00"
+    }
+  },
+  {
+    "entityName": "my_second_agent",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 33,
+      "timeOfDay": 8,
+      "timezone": "+01:00"
+    }
+  }
+]
+
+decisions = client.get_agent_bulk_boosting_decision(request_payload)
+```
+The variable `decisions` is an **array of responses**. If a decision was successfully received, the corresponding response is an object similar to the classic `get_agent_boosting_decision()` response. When there are **mixed results**, `decisions` should looks like:
+
+```python
+[
+  {
+    "context": {
+      "tz": "+02:00",
+      "movement": 2,
+      "time": 7.5
+    },
+    "output": {
+      "predicted_value": "OFF"
+    }
+  },
+  {
+    "error": CraftAiBadRequestError('error_message')
+  }
+]
+```
+
 #### Bulk - Create generators
 
+To create several generators at once, use the method `create_generators_bulk` as the following:
 
+```python
+
+generator_id_1 = "my_first_generator"
+generator_configuration_1 = {
+  "context": {
+    "light": {
+      "type": "enum"
+    },
+    "tz": {
+      "type": "timezone"
+    },
+    "movement": {
+      "type": "continuous"
+    },
+    "time": {
+      "type": "time_of_day",
+      "is_generated": True
+    }
+  },
+  "model_type": "decisionTree",
+  "output": [
+    "light"
+  ],
+  "learning_period": 1500000,
+  "max_training_samples": 15000,
+  "operations_as_events": True,
+  "filter": ["smarthome"]
+}
+generator_id_2 = "my_second_generator"
+generator_configuration_2 = {
+  "context": {
+    "light": {
+      "type": "enum"
+    },
+    "tz": {
+      "type": "timezone"
+    },
+    "movement": {
+      "type": "continuous"
+    },
+    "time": {
+      "type": "time_of_day",
+      "is_generated": True
+    }
+  },
+  "model_type": "decisionTree",
+  "output": [
+    "light"
+  ],
+  "learning_period": 1500000,
+  "max_training_samples": 15000,
+  "operations_as_events": True,
+  "filter": ["smarthome", "cleverhouse", "cunningshed"]
+}
+
+creation_bulk_payload = [
+  {"id": generator_id_1, "configuration": generator_configuration_1},
+  {"id": generator_id_2, "configuration": generator_configuration_2}
+]
+
+created_generators = client.create_generators_bulk(creation_bulk_payload)
+print(created_generators)
+```
+
+The variable `created_generators` is an **array of responses**. If a generator has been successfully created, the corresponding response is an object similar to the classic `create_generator()` response. When there are **mixed results**, `created_generators` should looks like:
+
+```python
+[
+  {
+    "_version": "2.0.0",                                 # creation succeeded
+    "configuration": {
+      "context": {
+        ...
+      },
+      "output": ...,
+      "learning_period": 1500000,
+      "time_quantum": 100
+    },
+    "id": "my_first_generator"
+  },
+  {
+    "error": CraftAiBadRequestError("error-message"),    # creation failed
+    "id": "my_second_generator"
+  }
+]
+```
 
 #### Bulk - Delete generators
 
+To delete several generators at once, use the method `delete_generators_bulk` as the following:
 
+```python
+generator_id_1 = "my_first_generator"
+generator_id_2 = "my_second_generator"
 
-#### Bulk - Compute generators' decision trees
+deletion_bulk_payload = [
+  {"id": generator_id_1},
+  {"id": generator_id_2},
+  {"id": "my_unknown_generator"}
+]
 
+deleted_generators = client.delete_generators_bulk(deletion_bulk_payload)
+print(deleted_generators)
+```
 
+The variable `deleted_generators` is an **array of responses**. If a generator has been successfully deleted, the corresponding response is an object similar to the classic `delete_generator()` response. When there are **mixed results**, `deleted_generators` should looks like:
+
+```python
+[
+  {
+    "id": "my_first_generator",                              # deletion succeeded
+    "creationDate": 1557492944277,
+    "lastContextUpdate": 1557492944277,
+    "lastTreeUpdate": 1557492944277,
+    "configuration": {
+       "context": {
+         ...
+       },
+       "output": ...,
+       "learning_period": 1500000,
+       "time_quantum": 100
+    },
+    "_version": "2.0.0"
+  },
+  {
+    "error": CraftAiBadRequestError("error-message"),       # deletion failed
+    "id": "my_second_generator"
+  },
+  {
+    "id": "my_unknown_generator"                            # deletion succeeded
+  }
+]
+```
+
+#### Bulk - Compute decision trees for generators
+
+To get several decision trees of generators at once, use the method `get_generators_decision_trees_bulk` as the following:
+
+```python
+generator_id_1 = "my_first_generator"
+generator_id_2 = "my_second_generator"
+
+decision_tree_bulk_payload =  [
+  {
+    "id": generator_id_1,
+    "timestamp": 1458741735
+  },
+  {
+    "id": generator_id_2,
+    "timestamp": 1458741737
+  }
+]
+
+trees = client.get_generators_decision_trees_bulk(decision_tree_bulk_payload)
+```
+The variable `trees` is an **array of responses**. If a generator’s decision tree has successfully been retrieved, the corresponding response is an object similar to the classic `get_generator_decision_tree()` response. When there are **mixed results**, trees should looks like:
+
+```python
+[
+  {
+    "id": "my_first_generator",                              # Getting of the tree succeeded
+    "tree": {
+      "trees": { ... }
+      "_version": "1.1.0",
+      "configuration": { ... }
+    }
+    "timestamp": 1458741735
+   },
+   {
+     "error": CraftAiBadRequestError("error_message"),  # Getting of the tree failed
+     "id": "my_second_generator"
+   }
+]
+```
+
+#### Bulk - Compute boosting decisions for generators
+
+To fetch several boosting predictions at once for generators, use the method `get_generator_bulk_boosting_decision` as the following:
+
+```python
+request_payload = [
+  {
+    "entityName": "my_firstgenerator",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 19,
+      "timeOfDay": 7.5,
+      "timezone": "+02:00"
+    }
+  },
+  {
+    "entityName": "my_firstgenerator",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 21,
+      "timeOfDay": 5,
+      "timezone": "+02:00"
+    }
+  },
+  {
+    "entityName": "my_secondgenerator",
+    "timeWindow": [1469415600, 1679415800],
+    "context": {
+      "peopleCount": 33,
+      "timeOfDay": 8,
+      "timezone": "+01:00"
+    }
+  }
+]
+
+decisions = client.get_generator_bulk_boosting_decision(request_payload)
+```
+The variable `decisions` is an **array of responses**. If a decision was successfully received, the corresponding response is an object similar to the classic `get_generator_boosting_decision()` response. When there are **mixed results**, `decisions` should looks like:
+
+```python
+[
+  {
+    "context": {
+      "tz": "+02:00",
+      "movement": 2,
+      "time": 7.5
+    },
+    "output": {
+      "predicted_value": "OFF"
+    }
+  },
+  {
+    "error": CraftAiBadRequestError("error_message")
+  }
+]
+```
 
 ### Advanced client configuration ###
 
@@ -1764,7 +2072,7 @@ A `decision` in a case where the tree cannot make a prediction:
 
 ### Reduce decision rules ###
 
-From a list of decision rules, as retrieved when taking a decision, when taking a decision compute an equivalent & minimal list of rules.
+From a list of decision rules, as retrieved when making a decision with a decision tree, compute an equivalent & minimal list of rules.
 
 ```python
 from craft_ai import reduce_decision_rules
@@ -2077,11 +2385,11 @@ decisions_df = CLIENT.decide_boosting_from_contexts_df(
 
 # `decisions_df` is a pd.DataFrame looking like
 #
-#                            output_predicted_value   
+#                            lightbulbState_predicted_value
 # 2013-01-01 00:00:00+00:00   OFF
-# 2013-01-02 00:00:00+00:00   ON 
-# 2013-01-03 00:00:00+00:00   ON 
-# 2013-01-04 00:00:00+00:00   ON 
+# 2013-01-02 00:00:00+00:00   ON
+# 2013-01-03 00:00:00+00:00   ON
+# 2013-01-04 00:00:00+00:00   ON
 # 2013-01-05 00:00:00+00:00   OFF
 
 ```
@@ -2104,7 +2412,7 @@ context_df = pd.DataFrame(
   ],
   columns=['peopleCount', 'timezone'],
   index=pd.date_range('20130101', periods=5, freq='D').tz_localize("UTC")
-))
+)
 
 decisions = CLIENT.decide_generator_boosting_from_contexts_df(
     generator_id,
@@ -2115,10 +2423,10 @@ decisions = CLIENT.decide_generator_boosting_from_contexts_df(
 
 # `decisions_df` is a pd.DataFrame looking like
 #
-#                            output_predicted_value   
+#                            lightbulbState_predicted_value
 # 2013-01-01 00:00:00+00:00   OFF
-# 2013-01-02 00:00:00+00:00   ON 
-# 2013-01-03 00:00:00+00:00   ON 
-# 2013-01-04 00:00:00+00:00   ON 
+# 2013-01-02 00:00:00+00:00   ON
+# 2013-01-03 00:00:00+00:00   ON
+# 2013-01-04 00:00:00+00:00   ON
 # 2013-01-05 00:00:00+00:00   OFF
 ```
