@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.5...HEAD) ##
 
+### Change
+
+- Add test for chunked agent boosting decision.
+
 ## [2.2.5](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.4...v2.2.5) - 2021-04-29 ##
 
 ### Change

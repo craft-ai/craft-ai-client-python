@@ -311,8 +311,7 @@ class Client(VanillaClient):
         )
 
     def decide_boosting_from_contexts_df(self, agent_id, from_ts, to_ts, contexts_df):
-        full_decision_df = None
-
+        predictions_df_list = []
         Client.check_decision_context_df(contexts_df)
         configuration = self.get_agent(agent_id)["configuration"]
 
@@ -321,7 +320,7 @@ class Client(VanillaClient):
             df, tz_col = self._generate_decision_df_and_tz_col(
                 agent_id, chunk, configuration
             )
-            decision_iter = self._pandas_agent_boosting_decide_from_df(
+            predictions_iter = self._pandas_agent_boosting_decide_from_df(
                 agent_id,
                 from_ts,
                 to_ts,
@@ -333,13 +332,10 @@ class Client(VanillaClient):
                 chunk,
             )
 
-            decision_df = pd.DataFrame(decision_iter, index=chunk.index)
-            if not full_decision_df:
-                full_decision_df = decision_df
-            else:
-                full_decision_df.append(decision_df)
+            predictions_df = pd.DataFrame(predictions_iter, index=chunk.index)
+            predictions_df_list.append(predictions_df)
 
-        return full_decision_df
+        return predictions_df_list[0].append(predictions_df_list[1:])
 
     def _pandas_generator_boosting_decide_from_df(
         self, generator_id, from_ts, to_ts, params, df
@@ -377,21 +373,28 @@ class Client(VanillaClient):
     def decide_generator_boosting_from_contexts_df(
         self, generator_id, from_ts, to_ts, contexts_df
     ):
+        predictions_df_list = []
         Client.check_decision_context_df(contexts_df)
         configuration = self.get_generator(generator_id)["configuration"]
-        df, tz_col = self._generate_decision_df_and_tz_col(
-            generator_id, contexts_df, configuration
-        )
 
-        predictions_iter = self._pandas_generator_boosting_decide_from_df(
-            generator_id,
-            from_ts,
-            to_ts,
-            {
-                "configuration": configuration,
-                "feature_names": df.columns.values,
-                "tz_col": tz_col,
-            },
-            df,
-        )
-        return pd.DataFrame(predictions_iter, index=df.index)
+        chunk_size = self.config["operationsChunksSize"]
+        for chunk in chunker(contexts_df, chunk_size):
+            df, tz_col = self._generate_decision_df_and_tz_col(
+                generator_id, contexts_df, configuration
+            )
+
+            predictions_iter = self._pandas_generator_boosting_decide_from_df(
+                generator_id,
+                from_ts,
+                to_ts,
+                {
+                    "configuration": configuration,
+                    "feature_names": df.columns.values,
+                    "tz_col": tz_col,
+                },
+                chunk,
+            )
+            predictions_df = pd.DataFrame(predictions_iter, index=chunk.index)
+            predictions_df_list.append(predictions_df)
+
+        return predictions_df_list[0].append(predictions_df_list[1:])

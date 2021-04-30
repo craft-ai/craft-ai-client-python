@@ -689,6 +689,33 @@ class TestPandasBoostingGeneratorWithGeneratedType(unittest.TestCase):
 
 
 @unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
+class TestPandasBoostingAgentWithChunks(unittest.TestCase):
+    def setUp(self):
+        self.agent_id = generate_entity_id(AGENT_ID_1_BASE + "BoostAgentWithChunks")
+        CLIENT.delete_agent(self.agent_id)
+        CLIENT.create_agent(SIMPLE_AGENT_BOOSTING_CONFIGURATION, self.agent_id)
+
+        CLIENT.add_agent_operations(self.agent_id, SIMPLE_AGENT_BOOSTING_MANY_DATA)
+        CLIENT._config["operationsChunksSize"] = 5
+
+    def tearDown(self):
+        CLIENT.delete_agent(self.agent_id)
+
+    def test_get_chunked_decision(self):
+        context_df = SIMPLE_AGENT_BOOSTING_MANY_DATA.copy()
+        del context_df[SIMPLE_AGENT_BOOSTING_CONFIGURATION["output"][0]]
+        decisions = CLIENT.decide_boosting_from_contexts_df(
+            self.agent_id,
+            SIMPLE_AGENT_BOOSTING_MANY_DATA.first_valid_index().value // 10 ** 9,
+            SIMPLE_AGENT_BOOSTING_MANY_DATA.last_valid_index().value // 10 ** 9,
+            context_df,
+        )
+        self.assertEqual(decisions.shape[0], pandas_valid_data.NB_MANY_OPERATIONS)
+        self.assertTrue(len(decisions.columns) == 1)
+        self.assertTrue("a_predicted_value" in decisions.columns)
+
+
+@unittest.skipIf(CRAFTAI_PANDAS_ENABLED is False, "pandas is not enabled")
 class TestPandasBoostingGeneratorWithChunks(unittest.TestCase):
     def setUp(self):
         self.agent_1_id = generate_entity_id(
