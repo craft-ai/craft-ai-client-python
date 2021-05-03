@@ -1474,6 +1474,7 @@ class Client(object):
             raise CraftAiBadRequestError(
                 "Request for the bulk API should be either a POST or DELETE" "request"
             )
+
         entities = self._decode_response(resp)
         entities = self._decode_response_bulk(entities)
         return entities

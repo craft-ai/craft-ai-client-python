@@ -246,7 +246,7 @@ class Client(VanillaClient):
             t=params["context_ops"][0].value
             // 1000000000,  # Timestamp.value returns nanoseconds
             timezone=context[params["tz_col"]]
-            if params["tz_col"]
+            if params["tz_col"] in context
             else params["context_ops"][0].tz,
         )
 
@@ -329,7 +329,7 @@ class Client(VanillaClient):
                     "feature_names": chunk.columns.values,
                     "tz_col": tz_col,
                 },
-                chunk,
+                df,
             )
 
             predictions_df = pd.DataFrame(predictions_iter, index=chunk.index)
@@ -380,7 +380,7 @@ class Client(VanillaClient):
         chunk_size = self.config["operationsChunksSize"]
         for chunk in chunker(contexts_df, chunk_size):
             df, tz_col = self._generate_decision_df_and_tz_col(
-                generator_id, contexts_df, configuration
+                generator_id, chunk, configuration
             )
 
             predictions_iter = self._pandas_generator_boosting_decide_from_df(
@@ -392,7 +392,7 @@ class Client(VanillaClient):
                     "feature_names": df.columns.values,
                     "tz_col": tz_col,
                 },
-                chunk,
+                df,
             )
             predictions_df = pd.DataFrame(predictions_iter, index=chunk.index)
             predictions_df_list.append(predictions_df)

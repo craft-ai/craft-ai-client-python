@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.6...HEAD) ##
 
+### Fixed
+
+- Fix boosting chunks
+
 ## [2.2.6](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.5...v2.2.6) - 2021-04-30 ##
 
 ### Change
