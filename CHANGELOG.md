@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.7...HEAD) ##
 
+### Fixed
+
+- Remove the introduction of an error when checking for the timezone column existence in _generate_time_features.
+
 ## [2.2.7](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.6...v2.2.7) - 2021-05-04 ##
 
 ### Fixed
 
-- Fix boosting chunks
+- Fix boosting chunks.
 
 ## [2.2.6](https://github.com/craft-ai/craft-ai-client-python/compare/v2.2.5...v2.2.6) - 2021-04-30 ##
 
