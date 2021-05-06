@@ -246,7 +246,7 @@ class Client(VanillaClient):
             t=params["context_ops"][0].value
             // 1000000000,  # Timestamp.value returns nanoseconds
             timezone=context[params["tz_col"]]
-            if params["tz_col"] in context
+            if params["tz_col"]
             else params["context_ops"][0].tz,
         )
 
